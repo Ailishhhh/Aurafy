@@ -45,7 +45,9 @@
       "typedRoutes": true
     },
     "extra": {
-      "aiEndpoint": "https://aurafy-myu4.onrender.com/analyze"
+      "aiEndpoint": "https://aurafy-myu4.onrender.com/analyze",
+      "supabaseUrl": "https://yprlliuxntwlljcvahcr.supabase.co",
+      "supabaseAnonKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlwcmxsaXV4bnR3bGxqY3ZhaGNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1ODEwMzIsImV4cCI6MjA5ODE1NzAzMn0.cGDoiOfa9lHiCIZNnErCEdAAj_Drezh9cp10t8vs4GY"
     }
   }
 }

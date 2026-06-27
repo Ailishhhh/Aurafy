@@ -1,24 +1,24 @@
 import { useSyncExternalStore } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import type { Session as SupaSession, User } from '@supabase/supabase-js';
+import { supabase, supabaseEnabled } from '@/lib/supabase';
 
 /**
- * Auth store.
+ * Auth store backed by Supabase.
  *
- * Phase 1 is a LOCAL session store (persisted to AsyncStorage) so the full
- * auth UX works end-to-end without a backend. It is intentionally structured as
- * an abstraction: when we add Supabase, we swap the bodies of signUp/signIn/
- * signOut to call Supabase and keep the same `session` shape + hooks — no screen
- * changes required.
+ * - Real accounts: Supabase email/password auth (sessions persisted + auto
+ *   refreshed by the Supabase client via AsyncStorage).
+ * - Guest: a local-only session (not synced) for users who skip sign-up.
+ * - Fallback: if Supabase keys are missing, everything degrades to a local
+ *   session so the app still runs.
  *
- * NOTE: this local mode does NOT verify passwords against a server; it is a
- * stand-in for the real cloud auth that Supabase will provide.
+ * The `session` shape is stable, so screens never care which path produced it.
  */
 
 export type Session = {
   id: string;
   email: string;
   name: string;
-  /** True for "continue as guest" (no email). */
   guest: boolean;
   createdAt: number;
 };
@@ -28,10 +28,11 @@ type State = {
   hydrated: boolean;
 };
 
-const KEY = 'aurafy.auth.v1';
-const ACCOUNTS_KEY = 'aurafy.accounts.v1'; // local-only credential store (placeholder)
+const GUEST_KEY = 'aurafy.guest.v1';
+const LOCAL_KEY = 'aurafy.localauth.v1'; // only used when Supabase is unavailable
 
 let state: State = { session: null, hydrated: false };
+let guest: Session | null = null;
 const listeners = new Set<() => void>();
 
 function emit() {
@@ -42,18 +43,29 @@ function setState(p: Partial<State>) {
   emit();
 }
 
-async function saveSession(session: Session | null) {
-  try {
-    if (session) await AsyncStorage.setItem(KEY, JSON.stringify(session));
-    else await AsyncStorage.removeItem(KEY);
-  } catch {
-    /* ignore */
-  }
+function deriveName(email: string) {
+  const handle = (email || '').split('@')[0] || 'there';
+  return handle.charAt(0).toUpperCase() + handle.slice(1);
 }
 
-function deriveName(email: string) {
-  const handle = email.split('@')[0] || 'there';
-  return handle.charAt(0).toUpperCase() + handle.slice(1);
+function mapUser(user: User): Session {
+  const name = (user.user_metadata?.name as string) || deriveName(user.email || '');
+  return { id: user.id, email: user.email || '', name, guest: false, createdAt: Date.now() };
+}
+
+/** Supabase session wins; otherwise fall back to a local guest if present. */
+function computeSession(supa: SupaSession | null): Session | null {
+  if (supa?.user) return mapUser(supa.user);
+  return guest;
+}
+
+async function loadGuest() {
+  try {
+    const raw = await AsyncStorage.getItem(GUEST_KEY);
+    guest = raw ? (JSON.parse(raw) as Session) : null;
+  } catch {
+    guest = null;
+  }
 }
 
 export const authStore = {
@@ -66,76 +78,96 @@ export const authStore = {
   },
 
   async hydrate() {
+    await loadGuest();
+
+    if (supabaseEnabled && supabase) {
+      try {
+        const { data } = await supabase.auth.getSession();
+        setState({ session: computeSession(data.session), hydrated: true });
+      } catch {
+        setState({ session: guest, hydrated: true });
+      }
+      // Keep state in sync with sign-in / sign-out / token refresh.
+      supabase.auth.onAuthStateChange((_event, supaSession) => {
+        setState({ session: computeSession(supaSession) });
+      });
+      return;
+    }
+
+    // Local fallback (no Supabase configured).
     try {
-      const raw = await AsyncStorage.getItem(KEY);
-      setState({ session: raw ? (JSON.parse(raw) as Session) : null, hydrated: true });
+      const raw = await AsyncStorage.getItem(LOCAL_KEY);
+      setState({ session: raw ? (JSON.parse(raw) as Session) : guest, hydrated: true });
     } catch {
-      setState({ hydrated: true });
+      setState({ session: guest, hydrated: true });
     }
   },
 
-  async signUp(email: string, password: string, name?: string): Promise<Session> {
-    // TODO(supabase): supabase.auth.signUp({ email, password })
+  async signUp(email: string, password: string, name?: string): Promise<void> {
+    const e = email.trim().toLowerCase();
+    if (supabase) {
+      const { data, error } = await supabase.auth.signUp({
+        email: e,
+        password,
+        options: { data: { name: name?.trim() || deriveName(e) } },
+      });
+      if (error) throw new Error(error.message);
+      // If email confirmation is on, no session is returned yet.
+      if (!data.session) {
+        throw new Error('Account created! Check your email to confirm, then sign in.');
+      }
+      setState({ session: computeSession(data.session) });
+      return;
+    }
+    // Local fallback
     const session: Session = {
       id: `u_${Date.now()}`,
-      email: email.trim().toLowerCase(),
-      name: (name && name.trim()) || deriveName(email),
+      email: e,
+      name: name?.trim() || deriveName(e),
       guest: false,
       createdAt: Date.now(),
     };
-    // Local-only credential store (placeholder so sign-in "remembers" the user).
-    try {
-      const raw = await AsyncStorage.getItem(ACCOUNTS_KEY);
-      const accounts = raw ? JSON.parse(raw) : {};
-      accounts[session.email] = { password, name: session.name, id: session.id };
-      await AsyncStorage.setItem(ACCOUNTS_KEY, JSON.stringify(accounts));
-    } catch {
-      /* ignore */
-    }
-    await saveSession(session);
+    await AsyncStorage.setItem(LOCAL_KEY, JSON.stringify(session));
     setState({ session });
-    return session;
   },
 
-  async signIn(email: string, password: string): Promise<Session> {
-    // TODO(supabase): supabase.auth.signInWithPassword({ email, password })
+  async signIn(email: string, password: string): Promise<void> {
     const e = email.trim().toLowerCase();
-    let name = deriveName(e);
-    let id = `u_${Date.now()}`;
-    try {
-      const raw = await AsyncStorage.getItem(ACCOUNTS_KEY);
-      const accounts = raw ? JSON.parse(raw) : {};
-      const acc = accounts[e];
-      if (acc) {
-        if (acc.password !== password) throw new Error('Incorrect password');
-        name = acc.name;
-        id = acc.id;
-      }
-    } catch (err) {
-      if (err instanceof Error && err.message === 'Incorrect password') throw err;
+    if (supabase) {
+      const { data, error } = await supabase.auth.signInWithPassword({ email: e, password });
+      if (error) throw new Error(error.message);
+      setState({ session: computeSession(data.session) });
+      return;
     }
-    const session: Session = { id, email: e, name, guest: false, createdAt: Date.now() };
-    await saveSession(session);
+    // Local fallback
+    const session: Session = {
+      id: `u_${Date.now()}`,
+      email: e,
+      name: deriveName(e),
+      guest: false,
+      createdAt: Date.now(),
+    };
+    await AsyncStorage.setItem(LOCAL_KEY, JSON.stringify(session));
     setState({ session });
-    return session;
   },
 
-  async continueAsGuest(): Promise<Session> {
-    const session: Session = {
+  async continueAsGuest(): Promise<void> {
+    guest = {
       id: `guest_${Date.now()}`,
       email: '',
       name: 'Guest',
       guest: true,
       createdAt: Date.now(),
     };
-    await saveSession(session);
-    setState({ session });
-    return session;
+    await AsyncStorage.setItem(GUEST_KEY, JSON.stringify(guest)).catch(() => {});
+    setState({ session: guest });
   },
 
-  async signOut() {
-    // TODO(supabase): supabase.auth.signOut()
-    await saveSession(null);
+  async signOut(): Promise<void> {
+    guest = null;
+    await AsyncStorage.removeItem(GUEST_KEY).catch(() => {});
+    await AsyncStorage.removeItem(LOCAL_KEY).catch(() => {});
+    if (supabase) await supabase.auth.signOut().catch(() => {});
     setState({ session: null });
   },
 };
