@@ -106,9 +106,9 @@ export default function Onboarding() {
 
       <Animated.View entering={FadeInDown.delay(520).duration(700)} style={styles.cta}>
         <GradientButton
-          label="Scan my face"
-          icon={<Ionicons name="camera" size={20} color={palette.white} />}
-          onPress={() => router.push('/scan')}
+          label="Get started"
+          icon={<Ionicons name="arrow-forward" size={20} color={palette.white} />}
+          onPress={() => router.push('/quiz')}
         />
         <Txt variant="caption" color={palette.textTertiary} center style={{ marginTop: spacing.md }}>
           Private by design. Your photos are analyzed, never shared.

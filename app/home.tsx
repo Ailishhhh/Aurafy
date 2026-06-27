@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
 import { Pressable, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -14,6 +14,7 @@ import {
   Sparkline,
 } from '@/components';
 import { analysisStore, useAnalysis } from '@/store/analysisStore';
+import { profileStore, useProfile } from '@/features/profile/profileStore';
 import { PROGRAMS } from '@/features/programs/catalog';
 import type { Analysis } from '@/features/analysis/types';
 import { palette, gradients, spacing, radius, hitSlop } from '@/theme';
@@ -26,6 +27,12 @@ export default function Home() {
   const router = useRouter();
   const { width } = useWindowDimensions();
   const { history, isPremium } = useAnalysis();
+  const { streak } = useProfile();
+
+  // Register today's visit -> advances the daily streak (retention loop).
+  useEffect(() => {
+    profileStore.recordActivity();
+  }, []);
 
   const latest = history[0];
   // Oldest -> newest for the trend line.
@@ -76,6 +83,30 @@ export default function Home() {
           <Txt variant="caption" color={palette.textSecondary} style={{ flex: 1 }}>
             Grounded in dermatology, strength science & facial aesthetics
           </Txt>
+        </View>
+      </Animated.View>
+
+      {/* Streak banner */}
+      <Animated.View entering={FadeInDown.delay(60).duration(450)} style={{ marginTop: spacing.md }}>
+        <View style={styles.streakCard}>
+          <LinearGradient
+            colors={['#FF9F45', '#FF6B6B']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.flameBadge}
+          >
+            <Ionicons name="flame" size={22} color={palette.white} />
+          </LinearGradient>
+          <View style={{ flex: 1 }}>
+            <Txt variant="heading" color={palette.textPrimary}>
+              {streak.current} day{streak.current === 1 ? '' : 's'} streak
+            </Txt>
+            <Txt variant="caption" color={palette.textSecondary}>
+              {streak.current <= 1
+                ? 'You showed up today — come back tomorrow to build it.'
+                : `Longest: ${streak.longest} days · keep the momentum going.`}
+            </Txt>
+          </View>
         </View>
       </Animated.View>
 
@@ -229,6 +260,23 @@ export default function Home() {
 
 const styles = StyleSheet.create({
   topBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  streakCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    padding: spacing.md,
+    borderRadius: radius.lg,
+    backgroundColor: 'rgba(255,159,69,0.1)',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(255,159,69,0.3)',
+  },
+  flameBadge: {
+    width: 46,
+    height: 46,
+    borderRadius: radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   topRight: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   gearBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
   credStrip: {

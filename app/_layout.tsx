@@ -17,6 +17,7 @@ import {
 import { palette } from '@/theme';
 import { analysisStore } from '@/store/analysisStore';
 import { authStore } from '@/features/auth/authStore';
+import { profileStore } from '@/features/profile/profileStore';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
@@ -30,9 +31,10 @@ export default function RootLayout() {
     Inter_700Bold,
   });
 
-  // Load persisted auth + history / progress / premium state on launch.
+  // Load persisted auth + profile + history / progress / premium on launch.
   useEffect(() => {
     authStore.hydrate();
+    profileStore.hydrate();
     analysisStore.hydrate();
   }, []);
 
@@ -58,6 +60,7 @@ export default function RootLayout() {
           <Stack.Screen name="index" />
           <Stack.Screen name="auth" options={{ animation: 'fade' }} />
           <Stack.Screen name="onboarding" />
+          <Stack.Screen name="quiz" options={{ animation: 'slide_from_right' }} />
           <Stack.Screen name="home" />
           <Stack.Screen name="settings" options={{ animation: 'slide_from_right' }} />
           <Stack.Screen name="program/[id]" options={{ animation: 'slide_from_right' }} />

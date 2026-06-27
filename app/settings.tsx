@@ -7,6 +7,7 @@ import Animated, { FadeInDown } from 'react-native-reanimated';
 import { Screen, Txt, GlassCard } from '@/components';
 import { useAuth, authStore } from '@/features/auth/authStore';
 import { useAnalysis, analysisStore } from '@/store/analysisStore';
+import { profileStore } from '@/features/profile/profileStore';
 import { palette, gradients, spacing, radius, hitSlop } from '@/theme';
 
 const APP_VERSION = '1.0.0';
@@ -78,6 +79,7 @@ export default function Settings() {
         style: 'destructive',
         onPress: async () => {
           await analysisStore.wipe();
+          await profileStore.wipe();
           await authStore.signOut();
           router.replace('/');
         },

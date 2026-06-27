@@ -65,15 +65,20 @@ export const RESPONSE_SCHEMA_HINT = `{
     "seeSpecialist": boolean (true if a professional is warranted, optional) } ]
 }`;
 
-export function buildUserPrompt(hasSide: boolean): string {
+export function buildUserPrompt(hasSide: boolean, userContext?: string): string {
   return [
     'Analyze the attached selfie(s) and produce an honest, specific glow-up analysis.',
     hasSide
       ? 'Two images are provided: a front view and a side profile.'
       : 'One front-view image is provided.',
+    userContext
+      ? `User context (tailor the plan to this — give age-appropriate height/growth advice, and prioritise the user's stated goals): ${userContext}.`
+      : '',
     'Be honest and calibrated — do not inflate scores. Name the actual visible',
     'issues and give concrete, named product/ingredient protocols. Include exactly',
     '6 metrics (jawline, skin, symmetry, eyes, hair, cheekbones) and 5-7 prioritized',
     `plan steps (highest-impact first). Respond with JSON only, matching: ${RESPONSE_SCHEMA_HINT}`,
-  ].join(' ');
+  ]
+    .filter(Boolean)
+    .join(' ');
 }

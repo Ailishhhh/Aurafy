@@ -3,6 +3,25 @@ import Constants from 'expo-constants';
 import type { Analysis, GlowUpStep, Metric, MetricKey } from './types';
 import { generateMockAnalysis } from './mock';
 import { buildUserPrompt } from './prompt';
+import { profileStore } from '@/features/profile/profileStore';
+
+const AGE_LABELS: Record<string, string> = {
+  under16: 'under 16 (likely still growing — height/growth advice IS relevant)',
+  '16-19': '16-19 (may still be growing — growth advice can apply)',
+  '20-24': '20-24 (growth plates likely closed — focus posture, not bone growth)',
+  '25-29': '25-29 (adult — no bone growth; posture/appearance only)',
+  '30plus': '30+ (adult — no bone growth; posture/appearance only)',
+};
+
+/** Build a short user-context string from the saved profile for the prompt. */
+function buildContext(): string | undefined {
+  const { profile } = profileStore.getSnapshot();
+  const parts: string[] = [];
+  if (profile.ageRange) parts.push(`age ${AGE_LABELS[profile.ageRange] ?? profile.ageRange}`);
+  if (profile.gender) parts.push(`gender ${profile.gender}`);
+  if (profile.goals?.length) parts.push(`primary goals: ${profile.goals.join(', ')}`);
+  return parts.length ? parts.join('; ') : undefined;
+}
 
 /**
  * Analysis service facade.
@@ -61,7 +80,7 @@ async function analyzeViaBackend(
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      prompt: buildUserPrompt(!!side),
+      prompt: buildUserPrompt(!!side, buildContext()),
       images: side ? [front, side] : [front],
     }),
   });
