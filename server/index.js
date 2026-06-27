@@ -79,7 +79,12 @@ app.post('/analyze', async (req, res) => {
     if (!geminiRes.ok) {
       const detail = await geminiRes.text();
       console.error('Gemini error', geminiRes.status, detail);
-      return res.status(502).json({ error: 'Upstream model error', status: geminiRes.status });
+      return res.status(502).json({
+        error: 'Upstream model error',
+        status: geminiRes.status,
+        // Surfaced to help debugging. Contains no secrets (just Gemini's message).
+        detail: detail.slice(0, 800),
+      });
     }
 
     const data = await geminiRes.json();
