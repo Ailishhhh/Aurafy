@@ -105,6 +105,14 @@ export const profileStore = {
     setState({ profile: { ...state.profile, ...answers, completed: true } });
   },
 
+  /** Merge server state into the local store (used by cloud sync on login). */
+  applyRemote(profile: Partial<Profile>, streak: Partial<Streak>) {
+    setState({
+      profile: { ...state.profile, ...profile },
+      streak: { ...state.streak, ...streak },
+    });
+  },
+
   /**
    * Register today's activity and update the streak.
    *  - same day already counted -> no change

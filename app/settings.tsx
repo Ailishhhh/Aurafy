@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Alert, Pressable, StyleSheet, Switch, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -9,6 +9,7 @@ import { useAuth, authStore } from '@/features/auth/authStore';
 import { useAnalysis, analysisStore } from '@/store/analysisStore';
 import { profileStore } from '@/features/profile/profileStore';
 import { inviteStore } from '@/features/invite/inviteStore';
+import { reminders } from '@/features/notifications/notifications';
 import { palette, gradients, spacing, radius, hitSlop } from '@/theme';
 
 const APP_VERSION = '1.0.0';
@@ -54,7 +55,27 @@ export default function Settings() {
   const router = useRouter();
   const { session } = useAuth();
   const { isPremium } = useAnalysis();
-  const [notifications, setNotifications] = useState(true);
+  const [notifications, setNotifications] = useState(false);
+
+  // Reflect the saved reminder preference.
+  useEffect(() => {
+    reminders.isEnabled().then(setNotifications);
+  }, []);
+
+  const toggleReminders = async (value: boolean) => {
+    if (value) {
+      const ok = await reminders.enable();
+      if (!ok) {
+        Alert.alert('Allow notifications', 'Enable notifications for Aurafy in your phone settings to get reminders.');
+        setNotifications(false);
+        return;
+      }
+      setNotifications(true);
+    } else {
+      await reminders.disable();
+      setNotifications(false);
+    }
+  };
 
   const initial = (session?.name?.[0] || 'A').toUpperCase();
 
@@ -158,7 +179,7 @@ export default function Settings() {
             right={
               <Switch
                 value={notifications}
-                onValueChange={setNotifications}
+                onValueChange={toggleReminders}
                 trackColor={{ true: palette.violet, false: palette.hairlineStrong }}
                 thumbColor={palette.white}
               />

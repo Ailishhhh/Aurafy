@@ -19,6 +19,7 @@ import { analysisStore } from '@/store/analysisStore';
 import { authStore } from '@/features/auth/authStore';
 import { profileStore } from '@/features/profile/profileStore';
 import { inviteStore } from '@/features/invite/inviteStore';
+import { initCloudSync } from '@/features/sync/cloudSync';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
@@ -38,6 +39,8 @@ export default function RootLayout() {
     profileStore.hydrate();
     inviteStore.hydrate();
     analysisStore.hydrate();
+    // Mirror data to Supabase once stores start emitting (no-op for guests).
+    initCloudSync();
   }, []);
 
   useEffect(() => {

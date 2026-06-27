@@ -102,6 +102,11 @@ export const analysisStore = {
   setCurrent(analysis: Analysis) {
     setState({ current: analysis }, false);
   },
+
+  /** Replace history with the server copy (used by cloud sync on login). */
+  applyRemoteHistory(history: Analysis[]) {
+    setState({ history, current: history[0] ?? state.current });
+  },
   toggleStep(id: string) {
     setState({
       completedSteps: { ...state.completedSteps, [id]: !state.completedSteps[id] },
