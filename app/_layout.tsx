@@ -15,6 +15,7 @@ import {
   Inter_700Bold,
 } from '@expo-google-fonts/inter';
 import { palette } from '@/theme';
+import { analysisStore } from '@/store/analysisStore';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
@@ -27,6 +28,11 @@ export default function RootLayout() {
     Inter_600SemiBold,
     Inter_700Bold,
   });
+
+  // Load persisted history / progress / premium state on launch.
+  useEffect(() => {
+    analysisStore.hydrate();
+  }, []);
 
   useEffect(() => {
     if (fontsLoaded || fontError) {
@@ -48,6 +54,8 @@ export default function RootLayout() {
           }}
         >
           <Stack.Screen name="index" />
+          <Stack.Screen name="onboarding" />
+          <Stack.Screen name="home" />
           <Stack.Screen name="scan" options={{ animation: 'slide_from_right' }} />
           <Stack.Screen name="analyzing" options={{ animation: 'fade', gestureEnabled: false }} />
           <Stack.Screen name="results" options={{ animation: 'fade' }} />

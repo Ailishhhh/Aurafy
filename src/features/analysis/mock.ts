@@ -14,73 +14,85 @@ const METRIC_DEFS: { key: MetricKey; label: string; notes: string[] }[] = [
     key: 'jawline',
     label: 'Jawline',
     notes: [
-      'Solid bone structure — reducing body fat and posture work will sharpen definition.',
-      'Good base. Mewing and lowering face fat can reveal a cleaner jaw angle.',
+      'Definition is softened by facial fat — leaning out and mewing will sharpen the angle noticeably.',
+      'Jaw is okay from the front but lacks projection; body-fat loss + posture work are your levers.',
     ],
   },
   {
     key: 'skin',
     label: 'Skin Quality',
     notes: [
-      'Clear tone overall. A simple AM/PM routine will boost glow and evenness.',
-      'Hydration and SPF are your fastest wins here for visible improvement.',
+      'Visible texture and some marks are dragging this down. A retinoid + SPF routine fixes most of it.',
+      'Uneven tone and mild congestion. Targeted actives (azelaic/vitamin C) will even it out.',
     ],
   },
   {
     key: 'symmetry',
     label: 'Symmetry',
     notes: [
-      'Naturally balanced features — most faces have minor asymmetry, yours reads well.',
-      'Strong harmony. Consistent sleep side and posture help maintain it.',
+      'Minor asymmetry, well within normal — not a priority, focus your effort elsewhere.',
+      'Reads fairly balanced; consistent sleep side and posture help maintain it.',
     ],
   },
   {
     key: 'eyes',
     label: 'Eye Area',
     notes: [
-      'Expressive eyes. Reducing under-eye puffiness will make them pop more.',
-      'Good canthal tilt potential — sleep and hydration sharpen this area.',
+      'Under-eye puffiness and darkness are aging the area — sleep, lower sodium and a caffeine eye cream help.',
+      'Decent shape, but tired-looking. De-puffing and brow shaping will make them pop.',
     ],
   },
   {
     key: 'hair',
     label: 'Hair & Frame',
     notes: [
-      'A cut tailored to your face shape could noticeably lift your overall harmony.',
-      'Healthy density. The right style adds significant framing impact.',
+      'Current style doesn\'t suit your face shape and is costing you real points — a tailored cut is a fast win.',
+      'Hair is healthy but unstyled; the right cut + product noticeably lifts overall harmony.',
     ],
   },
   {
     key: 'cheekbones',
     label: 'Cheekbones',
     notes: [
-      'Defined mid-face. Lower body fat will accentuate these further.',
-      'Good projection — lighting and angles already favor you here.',
+      'Mid-face is a bit flat/soft — lowering body fat will reveal more cheekbone definition.',
+      'Reasonable structure hidden under some facial fat; leaning out is the unlock.',
     ],
   },
 ];
 
 const PLAN_LIBRARY: GlowUpStep[] = [
   {
-    id: 'skincare-routine',
-    title: 'Build a 3-step skincare routine',
-    description: 'Cleanser, moisturizer, and SPF every morning. Add a retinol 2x/week at night.',
+    id: 'pigmentation',
+    title: 'Fade pigmentation & post-acne marks',
+    description: 'Even out skin tone with targeted actives. Apply AM, always finish with SPF 50 (sun undoes all progress).',
     category: 'skincare',
     effort: 'routine',
-    potentialGain: 6,
+    potentialGain: 7,
+    products: ['azelaic acid 10%', 'vitamin C serum', 'SPF 50'],
   },
   {
-    id: 'hydration',
-    title: 'Hydrate + cut sodium before bed',
-    description: 'Reduces facial puffiness and under-eye bags within days.',
-    category: 'habits',
-    effort: 'quick win',
-    potentialGain: 3,
+    id: 'acne-routine',
+    title: 'Clear active acne',
+    description: 'A consistent anti-acne routine. If breakouts are cystic or widespread, see a dermatologist for prescription options.',
+    category: 'skincare',
+    effort: 'routine',
+    potentialGain: 8,
+    products: ['2% salicylic acid cleanser', 'adapalene 0.1% gel'],
+    seeSpecialist: true,
+  },
+  {
+    id: 'texture-retinoid',
+    title: 'Smooth skin texture',
+    description: 'A nightly retinoid boosts cell turnover for clearer, smoother skin within 8-12 weeks. Start 2x/week.',
+    category: 'skincare',
+    effort: 'long game',
+    potentialGain: 6,
+    products: ['retinol 0.3-0.5%', 'ceramide moisturizer'],
   },
   {
     id: 'haircut',
     title: 'Get a cut for your face shape',
-    description: 'Bring a reference photo. The right frame is the single biggest instant upgrade.',
+    description: 'Bring a reference photo. The right frame is the single biggest instant upgrade to your harmony score.',
     category: 'grooming',
     effort: 'quick win',
     potentialGain: 7,
@@ -88,49 +100,50 @@ const PLAN_LIBRARY: GlowUpStep[] = [
   {
     id: 'bodyfat',
     title: 'Lower body fat to ~12-15%',
-    description: 'Reveals jawline and cheekbone definition more than anything else.',
+    description: 'Reveals jawline and cheekbone definition more than anything else. Slight calorie deficit + resistance training.',
     category: 'fitness',
     effort: 'long game',
     potentialGain: 9,
   },
   {
     id: 'brows',
-    title: 'Tidy your eyebrows',
-    description: 'A clean brow line frames the eyes and balances the upper face.',
+    title: 'Shape your eyebrows',
+    description: 'Tidy the strays and define the arch to frame your eyes. A barber or brow technician can set the shape first.',
     category: 'grooming',
     effort: 'quick win',
+    potentialGain: 5,
+  },
+  {
+    id: 'undereye',
+    title: 'Reduce under-eye puffiness',
+    description: 'Cut evening sodium, prioritise sleep, and use a caffeine eye cream to de-puff and brighten the eye area.',
+    category: 'habits',
+    effort: 'quick win',
+    potentialGain: 4,
+    products: ['caffeine eye cream'],
+  },
+  {
+    id: 'mewing-posture',
+    title: 'Mewing + fix forward-head posture',
+    description: 'Correct tongue posture and daily chin tucks improve jaw projection and side profile over months.',
+    category: 'fitness',
+    effort: 'long game',
     potentialGain: 4,
   },
   {
     id: 'sleep',
     title: 'Lock in 7-8h of sleep',
-    description: 'Better skin, sharper eye area, and reduced puffiness. Foundational.',
+    description: 'Foundational for skin repair, reduced puffiness and a sharper eye area. Non-negotiable.',
     category: 'habits',
-    effort: 'routine',
-    potentialGain: 5,
-  },
-  {
-    id: 'posture',
-    title: 'Fix forward-head posture',
-    description: 'Chin tucks daily. Improves jaw projection and overall presence.',
-    category: 'fitness',
-    effort: 'routine',
-    potentialGain: 4,
-  },
-  {
-    id: 'style',
-    title: 'Upgrade your fit + colors',
-    description: 'Wear colors that match your undertone and clothes that fit your frame.',
-    category: 'style',
     effort: 'routine',
     potentialGain: 5,
   },
 ];
 
 const HEADLINES = [
-  'You\'ve got a strong foundation to build on.',
-  'High potential — a few moves unlock the next level.',
-  'Great raw material. Time to sharpen it.',
+  'Decent base, but a few clear weak points are holding your score down — all fixable.',
+  'You have potential, but your skin and grooming are leaving easy points on the table.',
+  'Average right now — the plan below is where the real gains are.',
 ];
 
 function rand(min: number, max: number) {
@@ -144,7 +157,9 @@ export function generateMockAnalysis(photos: { front: string; side?: string }): 
   const metrics: Metric[] = METRIC_DEFS.map((d) => ({
     key: d.key,
     label: d.label,
-    score: rand(62, 86),
+    // Realistic, varied range — most metrics land below "attractive" so the
+    // plan has obvious value (matches the honest live prompt).
+    score: rand(42, 74),
     note: pick(d.notes),
   }));
 

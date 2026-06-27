@@ -33,6 +33,10 @@ export type GlowUpStep = {
   effort: 'quick win' | 'routine' | 'long game';
   /** Estimated point uplift this step can contribute (for motivation). */
   potentialGain: number;
+  /** Specific ingredient/product TYPES to use (never brand names). */
+  products?: string[];
+  /** True when a licensed professional (dermatologist, etc.) is warranted. */
+  seeSpecialist?: boolean;
 };
 
 export type Analysis = {

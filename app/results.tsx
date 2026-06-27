@@ -14,11 +14,12 @@ import {
   MetricBar,
 } from '@/components';
 import { useAnalysis } from '@/store/analysisStore';
+import { FutureSelf } from '@/features/analysis/FutureSelf';
 import { palette, gradients, spacing, radius, hitSlop } from '@/theme';
 
 export default function Results() {
   const router = useRouter();
-  const { current } = useAnalysis();
+  const { current, isPremium } = useAnalysis();
 
   // Guard: if someone lands here without an analysis, send them home.
   useEffect(() => {
@@ -33,7 +34,7 @@ export default function Results() {
     <Screen scroll subduedBackground>
       {/* Top bar */}
       <View style={styles.topBar}>
-        <Pressable onPress={() => router.replace('/')} hitSlop={hitSlop} style={styles.iconBtn}>
+        <Pressable onPress={() => router.replace('/home')} hitSlop={hitSlop} style={styles.iconBtn}>
           <Ionicons name="close" size={24} color={palette.textPrimary} />
         </Pressable>
         <Txt variant="label" color={palette.textSecondary}>
@@ -110,6 +111,15 @@ export default function Results() {
             </Txt>
           </View>
         </GlassCard>
+      </Animated.View>
+
+      {/* Future Self — the premium hook */}
+      <Animated.View entering={FadeInDown.delay(1580).duration(600)} style={{ marginTop: spacing.lg }}>
+        <FutureSelf
+          analysis={current}
+          isPremium={isPremium}
+          onUnlock={() => router.push('/paywall')}
+        />
       </Animated.View>
 
       {/* CTAs */}

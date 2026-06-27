@@ -6,3 +6,4 @@ export { GradientButton } from './GradientButton';
 export { GradientText } from './GradientText';
 export { ScoreRing } from './ScoreRing';
 export { MetricBar } from './MetricBar';
+export { Sparkline } from './Sparkline';

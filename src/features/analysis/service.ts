@@ -24,6 +24,12 @@ const ENDPOINT =
   process.env.EXPO_PUBLIC_AI_ENDPOINT ||
   (Constants.expoConfig?.extra as { aiEndpoint?: string } | undefined)?.aiEndpoint;
 
+// The image-transform endpoint lives alongside /analyze on the same server.
+const TRANSFORM_ENDPOINT = ENDPOINT ? ENDPOINT.replace(/\/analyze\/?$/, '/transform') : undefined;
+
+/** Whether the live AI transform feature is available (endpoint configured). */
+export const transformAvailable = !!TRANSFORM_ENDPOINT;
+
 const VALID_KEYS: MetricKey[] = ['jawline', 'skin', 'symmetry', 'eyes', 'hair', 'cheekbones'];
 const VALID_CATEGORIES = new Set<GlowUpStep['category']>(['skincare', 'grooming', 'fitness', 'style', 'habits']);
 const VALID_EFFORTS = new Set<GlowUpStep['effort']>(['quick win', 'routine', 'long game']);
@@ -107,6 +113,10 @@ function normalizeAnalysis(raw: any, photos: { front: string; side?: string }): 
           category: s.category as GlowUpStep['category'],
           effort: s.effort as GlowUpStep['effort'],
           potentialGain: clamp(s.potentialGain, 1, 10),
+          products: Array.isArray(s.products)
+            ? s.products.map((p: any) => String(p)).filter(Boolean).slice(0, 4)
+            : undefined,
+          seeSpecialist: typeof s.seeSpecialist === 'boolean' ? s.seeSpecialist : undefined,
         }))
     : [];
 
@@ -120,4 +130,25 @@ function normalizeAnalysis(raw: any, photos: { front: string; side?: string }): 
     plan,
     photos,
   };
+}
+
+
+/**
+ * Generate the "future self" glow-up image from the user's front selfie.
+ * Calls the backend /transform endpoint (Gemini image model) and returns a
+ * ready-to-render data URI. Throws on failure so the UI can show a retry state.
+ */
+export async function transformFace(frontUri: string): Promise<string> {
+  if (!TRANSFORM_ENDPOINT) throw new Error('Transform endpoint not configured');
+  const b64 = await toBase64(frontUri);
+  const res = await fetch(TRANSFORM_ENDPOINT, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ image: b64 }),
+  });
+  if (!res.ok) throw new Error(`Transform failed (${res.status})`);
+  const json = await res.json();
+  if (!json?.image) throw new Error('No image returned');
+  const mime: string = json.mimeType || 'image/png';
+  return `data:${mime};base64,${json.image}`;
 }

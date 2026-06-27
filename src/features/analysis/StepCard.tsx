@@ -68,6 +68,20 @@ export function StepCard({ step, index, completed, onToggle, locked, onUnlock }:
             <Txt variant="caption" color={palette.textSecondary} style={{ marginTop: 3 }}>
               {step.description}
             </Txt>
+
+            {!!step.products?.length && (
+              <View style={styles.products}>
+                {step.products.map((p) => (
+                  <View key={p} style={styles.productChip}>
+                    <Ionicons name="flask-outline" size={11} color={palette.violetBright} />
+                    <Txt variant="caption" color={palette.textPrimary}>
+                      {p}
+                    </Txt>
+                  </View>
+                ))}
+              </View>
+            )}
+
             <View style={styles.tags}>
               <View style={styles.tag}>
                 <Txt variant="caption" color={palette.textTertiary}>
@@ -80,6 +94,14 @@ export function StepCard({ step, index, completed, onToggle, locked, onUnlock }:
                   +{(step.potentialGain / 10).toFixed(1)} potential
                 </Txt>
               </View>
+              {step.seeSpecialist && (
+                <View style={[styles.tag, styles.specialistTag]}>
+                  <Ionicons name="medkit-outline" size={11} color={palette.success} />
+                  <Txt variant="caption" color={palette.success}>
+                    see a specialist
+                  </Txt>
+                </View>
+              )}
             </View>
           </View>
 
@@ -114,6 +136,24 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   tags: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.md, flexWrap: 'wrap' },
+  products: { flexDirection: 'row', gap: spacing.xs, marginTop: spacing.sm, flexWrap: 'wrap' },
+  productChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 4,
+    borderRadius: radius.sm,
+    backgroundColor: 'rgba(124,92,255,0.12)',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(124,92,255,0.3)',
+  },
+  specialistTag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: 'rgba(84,227,166,0.12)',
+  },
   tag: {
     paddingHorizontal: spacing.md,
     paddingVertical: 5,
