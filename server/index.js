@@ -122,6 +122,25 @@ app.get('/', (_req, res) => {
   res.json({ ok: true, service: 'aurafy-analysis', textModel: TEXT_MODEL, imageModel: IMAGE_MODEL });
 });
 
+/**
+ * Diagnostic: list the models this API key can access + their supported methods.
+ * Used to discover which image-capable model is available on the free tier.
+ */
+app.get('/debug/models', async (_req, res) => {
+  try {
+    if (!GEMINI_API_KEY) return res.status(500).json({ error: 'Server missing GEMINI_API_KEY' });
+    const r = await fetch(`${BASE}?key=${GEMINI_API_KEY}&pageSize=200`);
+    const data = await r.json();
+    const models = (data.models || []).map((m) => ({
+      name: m.name,
+      methods: m.supportedGenerationMethods,
+    }));
+    res.json({ count: models.length, models });
+  } catch (err) {
+    res.status(500).json({ error: String(err) });
+  }
+});
+
 app.post('/analyze', async (req, res) => {
   try {
     if (!GEMINI_API_KEY) return res.status(500).json({ error: 'Server missing GEMINI_API_KEY' });
@@ -180,7 +199,10 @@ app.post('/transform', async (req, res) => {
     const { image } = req.body || {};
     if (!image) return res.status(400).json({ error: 'Expected { image: base64 }' });
 
-    const r = await fetch(`${BASE}/${IMAGE_MODEL}:generateContent?key=${GEMINI_API_KEY}`, {
+    // Optional model override for diagnostics (defaults to configured IMAGE_MODEL).
+    const model = (req.body && req.body.model) || IMAGE_MODEL;
+
+    const r = await fetch(`${BASE}/${model}:generateContent?key=${GEMINI_API_KEY}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
