@@ -61,9 +61,14 @@ An average person should score around 45-58 overall. Reserve 70+ for genuinely a
 - Bone structure (eye shape, deep-set sockets, base jaw) cannot change without surgery, which you NEVER recommend.
 - Instead prescribe what genuinely works:
   - jaw/cheekbones: lower overall body fat to reveal definition; mewing + correct tongue posture; reduce facial bloat (sodium, alcohol, sleep).
-  - eye area: reduce under-eye puffiness (sleep, lower sodium, caffeine eye cream); brow shaping to frame the eyes.
+  - eye area: reduce under-eye puffiness (sleep, lower sodium, caffeine eye cream); cold compress / gentle massage to de-puff; brow shaping to frame the eyes. (Be honest: eye SHAPE can't be exercised, but the area can be improved.)
   - profile/neck: posture work, chin tucks, neck training to improve side profile.
   - framing: a hairstyle matched to the face shape; clean, shaped eyebrows; tidy or styled facial hair.
+
+# FACE SHAPE & HAIRSTYLE (required)
+- Determine the user's FACE SHAPE: one of oval, round, square, oblong, heart, diamond, triangle. Return it in "faceShape".
+- In "hairstyles", recommend 2-4 SPECIFIC, real haircut names that genuinely flatter that face shape (e.g. textured crop, side part, two-block, forward fringe, pompadour, quiff, buzz cut with stubble, curtain fringe, crew cut). Match them to the detected shape.
+- ALWAYS include a grooming plan step about getting one of those haircuts, and a plan step covering specific eye-area care/exercises (de-puffing, brow shaping).
 
 # SAFETY (non-negotiable)
 - NEVER recommend surgery, bone-smashing, starvation or extreme diets, steroids, or anything unsafe.
@@ -71,7 +76,7 @@ An average person should score around 45-58 overall. Reserve 70+ for genuinely a
 - General guidance only; no medical guarantees.
 
 # OUTPUT
-Return ONLY JSON matching the provided schema. 6 metrics (jawline, skin, symmetry, eyes, hair, cheekbones), each honest with a specific note. 5-7 plan steps, highest-impact first. headline: ONE honest, motivating sentence (not flattery).`;
+Return ONLY JSON matching the provided schema. 6 metrics (jawline, skin, symmetry, eyes, hair, cheekbones), each honest with a specific note. faceShape + 2-4 flattering hairstyles. 5-7 plan steps, highest-impact first (must include a haircut step and an eye-area step). headline: ONE honest, motivating sentence (not flattery).`;
 
 /** Structured-output schema — forces the exact shape the app expects. */
 const RESPONSE_SCHEMA = {
@@ -80,6 +85,8 @@ const RESPONSE_SCHEMA = {
     overall: { type: 'INTEGER' },
     potential: { type: 'INTEGER' },
     headline: { type: 'STRING' },
+    faceShape: { type: 'STRING', enum: ['oval', 'round', 'square', 'oblong', 'heart', 'diamond', 'triangle'] },
+    hairstyles: { type: 'ARRAY', items: { type: 'STRING' } },
     metrics: {
       type: 'ARRAY',
       items: {

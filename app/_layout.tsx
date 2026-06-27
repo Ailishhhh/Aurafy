@@ -56,6 +56,7 @@ export default function RootLayout() {
           <Stack.Screen name="index" />
           <Stack.Screen name="onboarding" />
           <Stack.Screen name="home" />
+          <Stack.Screen name="program/[id]" options={{ animation: 'slide_from_right' }} />
           <Stack.Screen name="scan" options={{ animation: 'slide_from_right' }} />
           <Stack.Screen name="analyzing" options={{ animation: 'fade', gestureEnabled: false }} />
           <Stack.Screen name="results" options={{ animation: 'fade' }} />

@@ -14,6 +14,7 @@ import {
   Sparkline,
 } from '@/components';
 import { analysisStore, useAnalysis } from '@/store/analysisStore';
+import { PROGRAMS } from '@/features/programs/catalog';
 import type { Analysis } from '@/features/analysis/types';
 import { palette, gradients, spacing, radius, hitSlop } from '@/theme';
 
@@ -62,6 +63,16 @@ export default function Home() {
           </Pressable>
         )}
       </View>
+
+      {/* Credibility strip */}
+      <Animated.View entering={FadeInDown.duration(450)} style={{ marginTop: spacing.lg }}>
+        <View style={styles.credStrip}>
+          <Ionicons name="shield-checkmark" size={15} color={palette.violetBright} />
+          <Txt variant="caption" color={palette.textSecondary} style={{ flex: 1 }}>
+            Grounded in dermatology, strength science & facial aesthetics
+          </Txt>
+        </View>
+      </Animated.View>
 
       {/* Latest score hero */}
       {latest && (
@@ -136,6 +147,45 @@ export default function Home() {
         />
       </Animated.View>
 
+      {/* Programs grid */}
+      <Animated.View entering={FadeInDown.delay(260).duration(500)} style={{ marginTop: spacing['2xl'] }}>
+        <Txt variant="overline" color={palette.textSecondary} style={{ marginBottom: spacing.md }}>
+          YOUR PROGRAMS
+        </Txt>
+        <View style={styles.programGrid}>
+          {/* Face analysis card (links to a new scan) */}
+          <Pressable style={styles.programCell} onPress={() => router.push('/scan')}>
+            <GlassCard radius={radius.lg} padding={spacing.lg}>
+              <View style={[styles.programIcon, { backgroundColor: 'rgba(225,92,255,0.16)' }]}>
+                <Ionicons name="scan" size={22} color={palette.magenta} />
+              </View>
+              <Txt variant="bodySemi" color={palette.textPrimary} style={{ marginTop: spacing.md }}>
+                Face Analysis
+              </Txt>
+              <Txt variant="caption" color={palette.textTertiary} style={{ marginTop: 2 }}>
+                Scan, score & glow-up plan
+              </Txt>
+            </GlassCard>
+          </Pressable>
+
+          {PROGRAMS.map((p) => (
+            <Pressable key={p.id} style={styles.programCell} onPress={() => router.push(`/program/${p.id}`)}>
+              <GlassCard radius={radius.lg} padding={spacing.lg}>
+                <View style={[styles.programIcon, { backgroundColor: `${p.accent}22` }]}>
+                  <Ionicons name={p.icon} size={22} color={p.accent} />
+                </View>
+                <Txt variant="bodySemi" color={palette.textPrimary} style={{ marginTop: spacing.md }}>
+                  {p.title}
+                </Txt>
+                <Txt variant="caption" color={palette.textTertiary} style={{ marginTop: 2 }}>
+                  {p.tagline}
+                </Txt>
+              </GlassCard>
+            </Pressable>
+          ))}
+        </View>
+      </Animated.View>
+
       {/* History list */}
       {history.length > 0 && (
         <Animated.View entering={FadeInDown.delay(320).duration(500)} style={{ marginTop: spacing['2xl'] }}>
@@ -174,6 +224,26 @@ export default function Home() {
 
 const styles = StyleSheet.create({
   topBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  credStrip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: radius.pill,
+    backgroundColor: 'rgba(124,92,255,0.08)',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(124,92,255,0.2)',
+  },
+  programGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md },
+  programCell: { width: '47.5%', flexGrow: 1 },
+  programIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: radius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   proPill: {
     flexDirection: 'row',
     alignItems: 'center',

@@ -48,6 +48,10 @@ export type Analysis = {
   potential: number;
   /** A short, confidence-building headline (never insulting). */
   headline: string;
+  /** Detected face shape (oval, round, square, oblong, heart, diamond, triangle). */
+  faceShape?: string;
+  /** Specific haircut names that flatter the detected face shape. */
+  hairstyles?: string[];
   metrics: Metric[];
   plan: GlowUpStep[];
   /** Local URIs of the photos used (front, optional side). */

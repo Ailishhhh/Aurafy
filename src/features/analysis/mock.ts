@@ -176,6 +176,12 @@ export function generateMockAnalysis(photos: { front: string; side?: string }): 
     overall,
     potential,
     headline: pick(HEADLINES),
+    faceShape: pick(['oval', 'square', 'round', 'oblong', 'heart']),
+    hairstyles: pick([
+      ['Textured crop', 'Side part', 'Two-block'],
+      ['Pompadour', 'Quiff', 'Crew cut with stubble'],
+      ['Forward fringe', 'Mid fade', 'Curtain fringe'],
+    ]),
     metrics,
     plan,
     photos,

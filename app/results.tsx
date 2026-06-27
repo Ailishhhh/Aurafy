@@ -99,6 +99,38 @@ export default function Results() {
         </GlassCard>
       </Animated.View>
 
+      {/* Face shape & hairstyles */}
+      {(current.faceShape || (current.hairstyles && current.hairstyles.length > 0)) && (
+        <Animated.View entering={FadeInDown.delay(1440).duration(600)} style={{ marginTop: spacing.lg }}>
+          <GlassCard radius={radius.xl} padding={spacing.xl}>
+            <View style={styles.insightRow}>
+              <View style={[styles.insightIcon, { backgroundColor: 'rgba(225,92,255,0.14)' }]}>
+                <Ionicons name="cut" size={18} color={palette.magenta} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Txt variant="label" color={palette.textSecondary}>
+                  {current.faceShape ? `FACE SHAPE · ${current.faceShape.toUpperCase()}` : 'RECOMMENDED HAIRSTYLES'}
+                </Txt>
+                <Txt variant="body" color={palette.textSecondary} style={{ marginTop: 2 }}>
+                  Cuts that flatter your face shape:
+                </Txt>
+              </View>
+            </View>
+            {!!current.hairstyles?.length && (
+              <View style={styles.hairChips}>
+                {current.hairstyles.map((h) => (
+                  <View key={h} style={styles.hairChip}>
+                    <Txt variant="caption" color={palette.textPrimary}>
+                      {h}
+                    </Txt>
+                  </View>
+                ))}
+              </View>
+            )}
+          </GlassCard>
+        </Animated.View>
+      )}
+
       {/* Top insight */}
       <Animated.View entering={FadeInDown.delay(1500).duration(600)} style={{ marginTop: spacing.lg }}>
         <GlassCard radius={radius.xl} padding={spacing.lg}>
@@ -161,6 +193,15 @@ const styles = StyleSheet.create({
     borderRadius: radius.pill,
   },
   insightRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+  hairChips: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginTop: spacing.lg },
+  hairChip: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: radius.pill,
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: palette.hairline,
+  },
   insightIcon: {
     width: 36,
     height: 36,

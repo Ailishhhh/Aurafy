@@ -38,16 +38,24 @@ recommend it). Prescribe what works: lower body fat for jaw/cheekbones, mewing
 + posture, reduce under-eye puffiness, brow shaping, a flattering haircut,
 tidy facial hair, neck/posture training.
 
+# FACE SHAPE: detect the face shape (oval, round, square, oblong, heart,
+diamond, triangle) and return it. In hairstyles, give 2-4 specific real haircut
+names that flatter that shape. Always include a haircut plan step and an
+eye-area care step.
+
 # SAFETY: never recommend surgery, bone-smashing, extreme diets, steroids, or
 anything unsafe. Recommend licensed professionals for medical concerns.
 
-# OUTPUT: ONLY JSON matching the schema. 6 metrics, 5-7 prioritized plan steps,
-and a headline that is ONE honest, motivating sentence (not flattery).`;
+# OUTPUT: ONLY JSON matching the schema. 6 metrics, faceShape + hairstyles,
+5-7 prioritized plan steps, and a headline that is ONE honest, motivating
+sentence (not flattery).`;
 
 /** The JSON shape the model returns (mirrors `Analysis` minus client fields). */
 export const RESPONSE_SCHEMA_HINT = `{
   "overall": number 0-100, "potential": number 0-100 (> overall),
   "headline": string (honest, motivating, not flattery),
+  "faceShape": "oval"|"round"|"square"|"oblong"|"heart"|"diamond"|"triangle",
+  "hairstyles": string[] (2-4 specific cuts that flatter the face shape),
   "metrics": [ { "key": "jawline"|"skin"|"symmetry"|"eyes"|"hair"|"cheekbones",
     "label": string, "score": number 0-100, "note": string (specific issue + fix) } ],
   "plan": [ { "id": string, "title": string, "description": string (concrete protocol),

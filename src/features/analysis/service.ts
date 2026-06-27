@@ -126,6 +126,10 @@ function normalizeAnalysis(raw: any, photos: { front: string; side?: string }): 
     overall,
     potential,
     headline: String(raw?.headline ?? 'You\'ve got a strong foundation to build on.'),
+    faceShape: typeof raw?.faceShape === 'string' ? raw.faceShape : undefined,
+    hairstyles: Array.isArray(raw?.hairstyles)
+      ? raw.hairstyles.map((h: any) => String(h)).filter(Boolean).slice(0, 4)
+      : undefined,
     metrics,
     plan,
     photos,
