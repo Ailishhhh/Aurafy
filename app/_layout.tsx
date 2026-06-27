@@ -18,6 +18,7 @@ import { palette } from '@/theme';
 import { analysisStore } from '@/store/analysisStore';
 import { authStore } from '@/features/auth/authStore';
 import { profileStore } from '@/features/profile/profileStore';
+import { inviteStore } from '@/features/invite/inviteStore';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
@@ -31,10 +32,11 @@ export default function RootLayout() {
     Inter_700Bold,
   });
 
-  // Load persisted auth + profile + history / progress / premium on launch.
+  // Load persisted auth + profile + invites + history on launch.
   useEffect(() => {
     authStore.hydrate();
     profileStore.hydrate();
+    inviteStore.hydrate();
     analysisStore.hydrate();
   }, []);
 

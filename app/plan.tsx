@@ -6,14 +6,18 @@ import Animated, { FadeInDown } from 'react-native-reanimated';
 import { Screen, Txt, GlassCard, MetricBar } from '@/components';
 import { StepCard } from '@/features/analysis/StepCard';
 import { analysisStore, useAnalysis } from '@/store/analysisStore';
+import { useInvite } from '@/features/invite/inviteStore';
+import { REQUIRED_INVITES } from '@/config';
 import { palette, spacing, radius, hitSlop } from '@/theme';
 
-/** Number of steps a free user can see before the premium gate. */
+/** Number of steps a free (locked) user can see before the unlock gate. */
 const FREE_STEP_LIMIT = 2;
 
 export default function Plan() {
   const router = useRouter();
   const { current, completedSteps, isPremium } = useAnalysis();
+  const { invitesSent } = useInvite();
+  const unlocked = isPremium || invitesSent >= REQUIRED_INVITES;
 
   const doneCount = useMemo(
     () => (current ? current.plan.filter((s) => completedSteps[s.id]).length : 0),
@@ -68,7 +72,7 @@ export default function Plan() {
       {/* Steps */}
       <View style={styles.steps}>
         {current.plan.map((step, i) => {
-          const locked = !isPremium && i >= FREE_STEP_LIMIT;
+          const locked = !unlocked && i >= FREE_STEP_LIMIT;
           return (
             <Animated.View key={step.id} entering={FadeInDown.delay(220 + i * 80).duration(500)}>
               <StepCard
@@ -84,7 +88,7 @@ export default function Plan() {
         })}
       </View>
 
-      {!isPremium && (
+      {!unlocked && (
         <Animated.View entering={FadeInDown.delay(600).duration(600)} style={{ marginTop: spacing.lg }}>
           <Pressable onPress={() => router.push('/paywall')}>
             <GlassCard glow radius={radius.xl} padding={spacing.xl}>
@@ -95,7 +99,7 @@ export default function Plan() {
                     Unlock your full plan
                   </Txt>
                   <Txt variant="caption" color={palette.textSecondary} style={{ marginTop: 2 }}>
-                    All steps, weekly tracking & unlimited re-scans
+                    Invite friends or go Premium to see every step
                   </Txt>
                 </View>
                 <Ionicons name="chevron-forward" size={20} color={palette.textTertiary} />

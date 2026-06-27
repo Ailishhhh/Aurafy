@@ -9,6 +9,8 @@ import type { Analysis } from './types';
 type ShareCardProps = {
   analysis: Analysis;
   width: number;
+  /** Card aspect ratio (height / width). 1.25 = 4:5 post, 1.78 = 9:16 story. */
+  aspect?: number;
 };
 
 /** Static, capture-ready radial orb (no animation so screenshots are crisp). */
@@ -35,8 +37,8 @@ function StaticOrb({ color, size, left, top }: { color: string; size: number; le
  * Designed to be the single most screenshot-worthy artifact in the category —
  * every share is free distribution, so this gets the most polish.
  */
-export function ShareCard({ analysis, width }: ShareCardProps) {
-  const height = width * 1.25; // 4:5
+export function ShareCard({ analysis, width, aspect = 1.25 }: ShareCardProps) {
+  const height = width * aspect;
   const topMetrics = [...analysis.metrics].sort((a, b) => b.score - a.score).slice(0, 3);
   const delta = ((analysis.potential - analysis.overall) / 10).toFixed(1);
 
@@ -85,10 +87,10 @@ export function ShareCard({ analysis, width }: ShareCardProps) {
         {/* Footer CTA */}
         <View style={styles.footer}>
           <Txt variant="caption" color={palette.textTertiary} center>
-            Scan your face. Discover your aura.
+            How attractive are you? Find out free.
           </Txt>
-          <Txt variant="label" color={palette.textPrimary} center style={{ marginTop: 2 }}>
-            Get your score on Aurafy
+          <Txt variant="bodySemi" color={palette.textPrimary} center style={{ marginTop: 2 }}>
+            Rate yours on Aurafy ✨
           </Txt>
         </View>
       </View>

@@ -14,12 +14,16 @@ import {
   MetricBar,
 } from '@/components';
 import { useAnalysis } from '@/store/analysisStore';
+import { useInvite } from '@/features/invite/inviteStore';
+import { UnlockGate } from '@/features/invite/UnlockGate';
 import { FutureSelf } from '@/features/analysis/FutureSelf';
+import { REQUIRED_INVITES } from '@/config';
 import { palette, gradients, spacing, radius, hitSlop } from '@/theme';
 
 export default function Results() {
   const router = useRouter();
   const { current, isPremium } = useAnalysis();
+  const { invitesSent } = useInvite();
 
   // Guard: if someone lands here without an analysis, send them home.
   useEffect(() => {
@@ -28,6 +32,8 @@ export default function Results() {
 
   if (!current) return null;
 
+  // Full analysis unlocks via Premium OR by inviting enough friends (viral loop).
+  const unlocked = isPremium || invitesSent >= REQUIRED_INVITES;
   const delta = ((current.potential - current.overall) / 10).toFixed(1);
 
   return (
@@ -85,90 +91,101 @@ export default function Results() {
         </GlassCard>
       </Animated.View>
 
-      {/* Feature breakdown */}
-      <Animated.View entering={FadeInDown.delay(1280).duration(600)} style={{ marginTop: spacing['2xl'] }}>
-        <Txt variant="overline" color={palette.textSecondary} style={{ marginBottom: spacing.md }}>
-          FEATURE BREAKDOWN
-        </Txt>
-        <GlassCard radius={radius.xl} padding={spacing.xl}>
-          <View style={{ gap: spacing.xl }}>
-            {current.metrics.map((m, i) => (
-              <MetricBar key={m.key} label={m.label} value={m.score} delay={1400 + i * 120} />
-            ))}
-          </View>
-        </GlassCard>
-      </Animated.View>
-
-      {/* Face shape & hairstyles */}
-      {(current.faceShape || (current.hairstyles && current.hairstyles.length > 0)) && (
-        <Animated.View entering={FadeInDown.delay(1440).duration(600)} style={{ marginTop: spacing.lg }}>
-          <GlassCard radius={radius.xl} padding={spacing.xl}>
-            <View style={styles.insightRow}>
-              <View style={[styles.insightIcon, { backgroundColor: 'rgba(225,92,255,0.14)' }]}>
-                <Ionicons name="cut" size={18} color={palette.magenta} />
-              </View>
-              <View style={{ flex: 1 }}>
-                <Txt variant="label" color={palette.textSecondary}>
-                  {current.faceShape ? `FACE SHAPE · ${current.faceShape.toUpperCase()}` : 'RECOMMENDED HAIRSTYLES'}
-                </Txt>
-                <Txt variant="body" color={palette.textSecondary} style={{ marginTop: 2 }}>
-                  Cuts that flatter your face shape:
-                </Txt>
-              </View>
-            </View>
-            {!!current.hairstyles?.length && (
-              <View style={styles.hairChips}>
-                {current.hairstyles.map((h) => (
-                  <View key={h} style={styles.hairChip}>
-                    <Txt variant="caption" color={palette.textPrimary}>
-                      {h}
-                    </Txt>
-                  </View>
-                ))}
-              </View>
-            )}
-          </GlassCard>
+      {/* Locked: invite-to-unlock viral gate */}
+      {!unlocked && (
+        <Animated.View entering={FadeInDown.delay(1240).duration(600)} style={{ marginTop: spacing['2xl'] }}>
+          <UnlockGate onPremium={() => router.push('/paywall')} />
         </Animated.View>
       )}
 
-      {/* Top insight */}
-      <Animated.View entering={FadeInDown.delay(1500).duration(600)} style={{ marginTop: spacing.lg }}>
-        <GlassCard radius={radius.xl} padding={spacing.lg}>
-          <View style={styles.insightRow}>
-            <View style={styles.insightIcon}>
-              <Ionicons name="bulb" size={18} color={palette.gold} />
-            </View>
-            <Txt variant="body" color={palette.textSecondary} style={{ flex: 1 }}>
-              {current.metrics[0]?.note}
+      {unlocked && (
+        <>
+          {/* Feature breakdown */}
+          <Animated.View entering={FadeInDown.delay(1280).duration(600)} style={{ marginTop: spacing['2xl'] }}>
+            <Txt variant="overline" color={palette.textSecondary} style={{ marginBottom: spacing.md }}>
+              FEATURE BREAKDOWN
             </Txt>
-          </View>
-        </GlassCard>
-      </Animated.View>
+            <GlassCard radius={radius.xl} padding={spacing.xl}>
+              <View style={{ gap: spacing.xl }}>
+                {current.metrics.map((m, i) => (
+                  <MetricBar key={m.key} label={m.label} value={m.score} delay={200 + i * 120} />
+                ))}
+              </View>
+            </GlassCard>
+          </Animated.View>
 
-      {/* Future Self — the premium hook */}
-      <Animated.View entering={FadeInDown.delay(1580).duration(600)} style={{ marginTop: spacing.lg }}>
-        <FutureSelf
-          analysis={current}
-          isPremium={isPremium}
-          onUnlock={() => router.push('/paywall')}
-        />
-      </Animated.View>
+          {/* Face shape & hairstyles */}
+          {(current.faceShape || (current.hairstyles && current.hairstyles.length > 0)) && (
+            <Animated.View entering={FadeInDown.delay(120).duration(600)} style={{ marginTop: spacing.lg }}>
+              <GlassCard radius={radius.xl} padding={spacing.xl}>
+                <View style={styles.insightRow}>
+                  <View style={[styles.insightIcon, { backgroundColor: 'rgba(225,92,255,0.14)' }]}>
+                    <Ionicons name="cut" size={18} color={palette.magenta} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Txt variant="label" color={palette.textSecondary}>
+                      {current.faceShape ? `FACE SHAPE · ${current.faceShape.toUpperCase()}` : 'RECOMMENDED HAIRSTYLES'}
+                    </Txt>
+                    <Txt variant="body" color={palette.textSecondary} style={{ marginTop: 2 }}>
+                      Cuts that flatter your face shape:
+                    </Txt>
+                  </View>
+                </View>
+                {!!current.hairstyles?.length && (
+                  <View style={styles.hairChips}>
+                    {current.hairstyles.map((h) => (
+                      <View key={h} style={styles.hairChip}>
+                        <Txt variant="caption" color={palette.textPrimary}>
+                          {h}
+                        </Txt>
+                      </View>
+                    ))}
+                  </View>
+                )}
+              </GlassCard>
+            </Animated.View>
+          )}
 
-      {/* CTAs */}
-      <Animated.View entering={FadeInDown.delay(1650).duration(600)} style={styles.ctas}>
-        <GradientButton
-          label="See my glow-up plan"
-          icon={<Ionicons name="map" size={18} color={palette.white} />}
-          onPress={() => router.push('/plan')}
-        />
-        <GradientButton
-          label="Share my aura card"
-          variant="glass"
-          icon={<Ionicons name="share-social" size={18} color={palette.textPrimary} />}
-          onPress={() => router.push('/share')}
-          style={{ marginTop: spacing.md }}
-        />
-      </Animated.View>
+          {/* Top insight */}
+          <Animated.View entering={FadeInDown.delay(180).duration(600)} style={{ marginTop: spacing.lg }}>
+            <GlassCard radius={radius.xl} padding={spacing.lg}>
+              <View style={styles.insightRow}>
+                <View style={styles.insightIcon}>
+                  <Ionicons name="bulb" size={18} color={palette.gold} />
+                </View>
+                <Txt variant="body" color={palette.textSecondary} style={{ flex: 1 }}>
+                  {current.metrics[0]?.note}
+                </Txt>
+              </View>
+            </GlassCard>
+          </Animated.View>
+
+          {/* Future Self — the premium hook */}
+          <Animated.View entering={FadeInDown.delay(240).duration(600)} style={{ marginTop: spacing.lg }}>
+            <FutureSelf
+              analysis={current}
+              isPremium={isPremium}
+              onUnlock={() => router.push('/paywall')}
+            />
+          </Animated.View>
+
+          {/* CTAs */}
+          <Animated.View entering={FadeInDown.delay(300).duration(600)} style={styles.ctas}>
+            <GradientButton
+              label="See my glow-up plan"
+              icon={<Ionicons name="map" size={18} color={palette.white} />}
+              onPress={() => router.push('/plan')}
+            />
+            <GradientButton
+              label="Share my aura card"
+              variant="glass"
+              icon={<Ionicons name="share-social" size={18} color={palette.textPrimary} />}
+              onPress={() => router.push('/share')}
+              style={{ marginTop: spacing.md }}
+            />
+          </Animated.View>
+        </>
+      )}
     </Screen>
   );
 }
