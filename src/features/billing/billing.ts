@@ -1,17 +1,17 @@
+import Constants from 'expo-constants';
 import { analysisStore } from '@/store/analysisStore';
 
 /**
- * Billing abstraction.
+ * Billing — RevenueCat on top of Google Play Billing.
  *
- * The UI talks only to this module, never to a vendor SDK directly. Today it's
- * a mock that flips the local premium flag; to go live we install
- * `react-native-purchases` (RevenueCat) and implement these four functions
- * against it — no screen changes required.
+ * RevenueCat is NOT a payment gateway; Google Play (which supports UPI/cards/
+ * wallets for Indian users) processes the money, and RevenueCat manages the
+ * subscriptions, receipts, and the "premium" entitlement across platforms.
  *
- *   configure()  -> Purchases.configure({ apiKey })
- *   getOfferings -> Purchases.getOfferings()
- *   purchase()   -> Purchases.purchasePackage(pkg)
- *   restore()    -> Purchases.restorePurchases()
+ * Expo Go has no native purchase module, so everything is wrapped defensively:
+ * if RevenueCat can't initialise (Expo Go, or no API key yet) we fall back to a
+ * MOCK unlock so the flow stays testable. Real purchases activate automatically
+ * in a dev/production build once the API key + store products are configured.
  */
 
 export type PlanId = 'weekly' | 'yearly' | 'lifetime';
@@ -20,66 +20,121 @@ export type Plan = {
   id: PlanId;
   title: string;
   price: string;
-  /** Sub-line, e.g. per-week breakdown for annual. */
   subtitle?: string;
   badge?: string;
-  /** Marks the option pre-selected + visually emphasized. */
   highlighted?: boolean;
 };
 
 /**
- * Display plans. Prices here are placeholders for the UI; the real prices come
- * from the store via RevenueCat offerings once wired. Pricing tuned for the
- * looksmaxxing niche (low weekly anchor + a clearly cheaper annual).
+ * Display plans (INR, tuned for accessibility + a strong yearly anchor). Once
+ * RevenueCat is live these are superseded by the real, store-localised prices
+ * from offerings — but they remain the labels/fallback.
  */
 export const PLANS: Plan[] = [
-  { id: 'weekly', title: 'Weekly', price: '₹149', subtitle: 'billed weekly' },
+  { id: 'weekly', title: 'Weekly', price: '₹119', subtitle: 'billed weekly' },
   {
     id: 'yearly',
     title: 'Yearly',
-    price: '₹2,499',
-    subtitle: 'just ₹48/week',
+    price: '₹1,299',
+    subtitle: 'just ₹25/week · save 79%',
     badge: 'BEST VALUE',
     highlighted: true,
   },
-  { id: 'lifetime', title: 'Lifetime', price: '₹4,999', subtitle: 'one-time' },
+  { id: 'lifetime', title: 'Lifetime', price: '₹2,499', subtitle: 'one-time · pay once' },
 ];
 
 export const PREMIUM_BENEFITS = [
+  'Your AI "future self" transformation image',
+  'Unlimited re-scans + instant full unlock',
   'Your complete, personalized glow-up plan',
-  'Unlimited re-scans & weekly progress tracking',
-  'Deep feature insights & potential breakdown',
-  'Exclusive premium aura share cards',
-  'Priority new features, no ads',
+  'All programs: physique, skin, height & posture',
+  'Weekly progress tracking — no ads',
 ] as const;
 
-let configured = false;
+const RC_KEY = (Constants.expoConfig?.extra as { revenueCatAndroidKey?: string } | undefined)
+  ?.revenueCatAndroidKey;
+const ENTITLEMENT = 'premium';
+
+// Loaded lazily so Expo Go (which lacks the native module) never crashes.
+let Purchases: typeof import('react-native-purchases').default | null = null;
+let PACKAGE_TYPE: typeof import('react-native-purchases').PACKAGE_TYPE | null = null;
+let rcReady = false;
+
+async function ensureConfigured(): Promise<boolean> {
+  if (rcReady) return true;
+  if (!RC_KEY) return false;
+  try {
+    const mod = require('react-native-purchases');
+    Purchases = mod.default;
+    PACKAGE_TYPE = mod.PACKAGE_TYPE;
+    await Purchases!.configure({ apiKey: RC_KEY });
+    rcReady = true;
+    // Sync any existing entitlement (e.g. a returning paid user).
+    const info = await Purchases!.getCustomerInfo();
+    if (info?.entitlements?.active?.[ENTITLEMENT]) analysisStore.setPremium(true);
+    return true;
+  } catch {
+    rcReady = false;
+    return false;
+  }
+}
+
+function packageTypeFor(planId: PlanId) {
+  if (!PACKAGE_TYPE) return null;
+  return planId === 'weekly'
+    ? PACKAGE_TYPE.WEEKLY
+    : planId === 'yearly'
+      ? PACKAGE_TYPE.ANNUAL
+      : PACKAGE_TYPE.LIFETIME;
+}
 
 export const billing = {
+  /** Initialise RevenueCat at app start (no-op in Expo Go / without a key). */
   async configure() {
-    // TODO(real): Purchases.configure({ apiKey: process.env.EXPO_PUBLIC_RC_KEY })
-    configured = true;
+    await ensureConfigured();
   },
 
   async getPlans(): Promise<Plan[]> {
-    // TODO(real): map Purchases.getOfferings() -> Plan[]
     return PLANS;
   },
 
   async purchase(planId: PlanId): Promise<{ success: boolean }> {
-    // TODO(real): await Purchases.purchasePackage(pkg) and read entitlements.
-    await new Promise((r) => setTimeout(r, 900));
-    analysisStore.setPremium(true);
-    return { success: true };
+    const ready = await ensureConfigured();
+    if (!ready || !Purchases) {
+      // Mock unlock (Expo Go / not yet configured) so the flow is testable.
+      await new Promise((r) => setTimeout(r, 800));
+      analysisStore.setPremium(true);
+      return { success: true };
+    }
+    try {
+      const offerings = await Purchases.getOfferings();
+      const pkgs = offerings.current?.availablePackages ?? [];
+      const wantType = packageTypeFor(planId);
+      const pkg = pkgs.find((p) => p.packageType === wantType) ?? pkgs[0];
+      if (!pkg) throw new Error('No package available');
+      const { customerInfo } = await Purchases.purchasePackage(pkg);
+      const active = !!customerInfo?.entitlements?.active?.[ENTITLEMENT];
+      analysisStore.setPremium(active);
+      return { success: active };
+    } catch {
+      return { success: false };
+    }
   },
 
   async restore(): Promise<{ restored: boolean }> {
-    // TODO(real): const info = await Purchases.restorePurchases()
-    await new Promise((r) => setTimeout(r, 700));
-    return { restored: false };
+    const ready = await ensureConfigured();
+    if (!ready || !Purchases) return { restored: false };
+    try {
+      const info = await Purchases.restorePurchases();
+      const active = !!info?.entitlements?.active?.[ENTITLEMENT];
+      analysisStore.setPremium(active);
+      return { restored: active };
+    } catch {
+      return { restored: false };
+    }
   },
 
   isConfigured() {
-    return configured;
+    return rcReady;
   },
 };

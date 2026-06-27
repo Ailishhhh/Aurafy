@@ -20,6 +20,7 @@ import { authStore } from '@/features/auth/authStore';
 import { profileStore } from '@/features/profile/profileStore';
 import { inviteStore } from '@/features/invite/inviteStore';
 import { initCloudSync } from '@/features/sync/cloudSync';
+import { billing } from '@/features/billing/billing';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
@@ -41,6 +42,8 @@ export default function RootLayout() {
     analysisStore.hydrate();
     // Mirror data to Supabase once stores start emitting (no-op for guests).
     initCloudSync();
+    // Initialise RevenueCat (no-op in Expo Go / until an API key is set).
+    billing.configure();
   }, []);
 
   useEffect(() => {
