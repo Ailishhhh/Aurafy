@@ -16,6 +16,7 @@ import {
 } from '@expo-google-fonts/inter';
 import { palette } from '@/theme';
 import { analysisStore } from '@/store/analysisStore';
+import { authStore } from '@/features/auth/authStore';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
@@ -29,8 +30,9 @@ export default function RootLayout() {
     Inter_700Bold,
   });
 
-  // Load persisted history / progress / premium state on launch.
+  // Load persisted auth + history / progress / premium state on launch.
   useEffect(() => {
+    authStore.hydrate();
     analysisStore.hydrate();
   }, []);
 
@@ -54,8 +56,10 @@ export default function RootLayout() {
           }}
         >
           <Stack.Screen name="index" />
+          <Stack.Screen name="auth" options={{ animation: 'fade' }} />
           <Stack.Screen name="onboarding" />
           <Stack.Screen name="home" />
+          <Stack.Screen name="settings" options={{ animation: 'slide_from_right' }} />
           <Stack.Screen name="program/[id]" options={{ animation: 'slide_from_right' }} />
           <Stack.Screen name="scan" options={{ animation: 'slide_from_right' }} />
           <Stack.Screen name="analyzing" options={{ animation: 'fade', gestureEnabled: false }} />

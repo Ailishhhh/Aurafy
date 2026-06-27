@@ -113,6 +113,19 @@ export const analysisStore = {
   reset() {
     setState({ current: null, pending: null });
   },
+
+  /** Wipe all persisted analysis data (used by Settings -> Clear data). */
+  async wipe() {
+    try {
+      await AsyncStorage.removeItem(PERSIST_KEY);
+    } catch {
+      /* ignore */
+    }
+    setState(
+      { current: null, history: [], pending: null, completedSteps: {}, isPremium: false },
+      false,
+    );
+  },
 };
 
 export function useAnalysis() {

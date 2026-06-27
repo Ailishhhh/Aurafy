@@ -52,16 +52,21 @@ export default function Home() {
             Aurafy
           </GradientText>
         </View>
-        {!isPremium && (
-          <Pressable onPress={() => router.push('/paywall')} hitSlop={hitSlop}>
-            <LinearGradient colors={gradients.gold} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.proPill}>
-              <Ionicons name="diamond" size={13} color={palette.void} />
-              <Txt variant="caption" color={palette.void} style={{ fontFamily: 'Inter_700Bold' }}>
-                Go Premium
-              </Txt>
-            </LinearGradient>
+        <View style={styles.topRight}>
+          {!isPremium && (
+            <Pressable onPress={() => router.push('/paywall')} hitSlop={hitSlop}>
+              <LinearGradient colors={gradients.gold} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.proPill}>
+                <Ionicons name="diamond" size={13} color={palette.void} />
+                <Txt variant="caption" color={palette.void} style={{ fontFamily: 'Inter_700Bold' }}>
+                  Go Premium
+                </Txt>
+              </LinearGradient>
+            </Pressable>
+          )}
+          <Pressable onPress={() => router.push('/settings')} hitSlop={hitSlop} style={styles.gearBtn}>
+            <Ionicons name="settings-outline" size={22} color={palette.textSecondary} />
           </Pressable>
-        )}
+        </View>
       </View>
 
       {/* Credibility strip */}
@@ -224,6 +229,8 @@ export default function Home() {
 
 const styles = StyleSheet.create({
   topBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  topRight: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  gearBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
   credStrip: {
     flexDirection: 'row',
     alignItems: 'center',

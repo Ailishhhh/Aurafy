@@ -1,5 +1,6 @@
 export { Txt } from './Txt';
 export { Screen } from './Screen';
+export { Field } from './Field';
 export { AnimatedBackground } from './AnimatedBackground';
 export { GlassCard } from './GlassCard';
 export { GradientButton } from './GradientButton';
