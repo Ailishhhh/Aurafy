@@ -1,0 +1,50 @@
+{
+  "expo": {
+    "name": "Aurafy",
+    "slug": "aurafy",
+    "scheme": "aurafy",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#07060B",
+    "newArchEnabled": true,
+    "splash": {
+      "backgroundColor": "#07060B",
+      "resizeMode": "contain",
+      "image": "./assets/icon.png"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.aurafy.app"
+    },
+    "android": {
+      "package": "com.aurafy.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#07060B",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-image",
+      "expo-font",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Aurafy needs access to your photos so you can analyze your selfies and track your glow-up.",
+          "cameraPermission": "Aurafy needs camera access so you can scan your face for analysis."
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
