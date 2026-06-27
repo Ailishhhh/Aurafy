@@ -43,6 +43,9 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "aiEndpoint": "https://aurafy-myu4.onrender.com/analyze"
     }
   }
 }

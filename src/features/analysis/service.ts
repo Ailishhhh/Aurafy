@@ -1,4 +1,5 @@
 import * as FileSystem from 'expo-file-system/legacy';
+import Constants from 'expo-constants';
 import type { Analysis, GlowUpStep, Metric, MetricKey } from './types';
 import { generateMockAnalysis } from './mock';
 import { buildUserPrompt } from './prompt';
@@ -19,7 +20,9 @@ import { buildUserPrompt } from './prompt';
  * the client bundle.
  */
 
-const ENDPOINT = process.env.EXPO_PUBLIC_AI_ENDPOINT;
+const ENDPOINT =
+  process.env.EXPO_PUBLIC_AI_ENDPOINT ||
+  (Constants.expoConfig?.extra as { aiEndpoint?: string } | undefined)?.aiEndpoint;
 
 const VALID_KEYS: MetricKey[] = ['jawline', 'skin', 'symmetry', 'eyes', 'hair', 'cheekbones'];
 const VALID_CATEGORIES = new Set<GlowUpStep['category']>(['skincare', 'grooming', 'fitness', 'style', 'habits']);
