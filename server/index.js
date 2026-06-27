@@ -41,6 +41,58 @@ higher than the overall score and realistically achievable with the plan.
 
 Return ONLY valid JSON matching the requested schema. No markdown, no commentary.`;
 
+/**
+ * Structured-output schema passed to Gemini. This FORCES the model to return
+ * exactly the shape the app's `normalizeAnalysis` expects — keys, enums, and
+ * all — eliminating schema drift. Enums mirror src/features/analysis/types.ts.
+ */
+const RESPONSE_SCHEMA = {
+  type: 'OBJECT',
+  properties: {
+    overall: { type: 'INTEGER' },
+    potential: { type: 'INTEGER' },
+    headline: { type: 'STRING' },
+    metrics: {
+      type: 'ARRAY',
+      items: {
+        type: 'OBJECT',
+        properties: {
+          key: {
+            type: 'STRING',
+            enum: ['jawline', 'skin', 'symmetry', 'eyes', 'hair', 'cheekbones'],
+          },
+          label: { type: 'STRING' },
+          score: { type: 'INTEGER' },
+          note: { type: 'STRING' },
+        },
+        required: ['key', 'label', 'score', 'note'],
+      },
+    },
+    plan: {
+      type: 'ARRAY',
+      items: {
+        type: 'OBJECT',
+        properties: {
+          id: { type: 'STRING' },
+          title: { type: 'STRING' },
+          description: { type: 'STRING' },
+          category: {
+            type: 'STRING',
+            enum: ['skincare', 'grooming', 'fitness', 'style', 'habits'],
+          },
+          effort: {
+            type: 'STRING',
+            enum: ['quick win', 'routine', 'long game'],
+          },
+          potentialGain: { type: 'INTEGER' },
+        },
+        required: ['id', 'title', 'description', 'category', 'effort', 'potentialGain'],
+      },
+    },
+  },
+  required: ['overall', 'potential', 'headline', 'metrics', 'plan'],
+};
+
 app.get('/', (_req, res) => {
   res.json({ ok: true, service: 'aurafy-analysis', model: MODEL });
 });
@@ -70,8 +122,14 @@ app.post('/analyze', async (req, res) => {
         contents: [{ role: 'user', parts }],
         generationConfig: {
           responseMimeType: 'application/json',
+          // Force the exact JSON shape the app expects (no more schema drift).
+          responseSchema: RESPONSE_SCHEMA,
           temperature: 0.5,
-          maxOutputTokens: 2048,
+          // Generous budget so the full structured response is never truncated.
+          maxOutputTokens: 4096,
+          // Disable "thinking" tokens (2.5 models) so the whole budget goes to
+          // the answer — prevents truncated/invalid JSON.
+          thinkingConfig: { thinkingBudget: 0 },
         },
       }),
     });
