@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { StyleSheet, View, useWindowDimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Image } from 'expo-image';
@@ -14,7 +14,7 @@ import Animated, {
   interpolate,
 } from 'react-native-reanimated';
 import { Screen, Txt } from '@/components';
-import { analysisStore, useAnalysis } from '@/store/analysisStore';
+import { analysisStore } from '@/store/analysisStore';
 import { analyzeFace } from '@/features/analysis/service';
 import { palette, gradients, radius, spacing } from '@/theme';
 
@@ -30,29 +30,41 @@ const STATUSES = [
 export default function Analyzing() {
   const router = useRouter();
   const { width } = useWindowDimensions();
-  const { pending } = useAnalysis();
+  // Capture the pending photos ONCE on first render. We deliberately read from
+  // the store snapshot (not the reactive hook) so that when analysis completes
+  // and clears `pending`, this screen does not re-evaluate and bounce home.
+  const [photos] = useState(() => analysisStore.getSnapshot().pending);
   const [statusIndex, setStatusIndex] = useState(0);
+  const startedRef = useRef(false);
 
   const frameSize = Math.min(width - spacing.xl * 2, 300);
   const sweep = useSharedValue(0);
   const spin = useSharedValue(0);
 
-  // Kick off the analysis + redirect when done.
+  // Kick off the analysis exactly once, then navigate to results.
   useEffect(() => {
-    if (!pending) {
+    if (startedRef.current) return;
+    startedRef.current = true;
+
+    if (!photos) {
       router.replace('/');
       return;
     }
+
     let active = true;
-    analyzeFace(pending).then((analysis) => {
-      if (!active) return;
-      analysisStore.commit(analysis);
-      router.replace('/results');
-    });
+    analyzeFace(photos)
+      .then((analysis) => {
+        if (!active) return;
+        analysisStore.commit(analysis);
+        router.replace('/results');
+      })
+      .catch(() => {
+        if (active) router.replace('/');
+      });
     return () => {
       active = false;
     };
-  }, [pending, router]);
+  }, [photos, router]);
 
   // Looping animations.
   useEffect(() => {
@@ -90,8 +102,8 @@ export default function Analyzing() {
         </Animated.View>
 
         <View style={[styles.frame, { width: frameSize, height: frameSize }]}>
-          {pending?.front && (
-            <Image source={{ uri: pending.front }} style={StyleSheet.absoluteFill} contentFit="cover" />
+          {photos?.front && (
+            <Image source={{ uri: photos.front }} style={StyleSheet.absoluteFill} contentFit="cover" />
           )}
           <View style={styles.scanTint} />
           {/* Sweeping scan line */}

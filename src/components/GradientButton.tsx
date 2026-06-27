@@ -85,7 +85,22 @@ export function GradientButton({
     >
       {isGlass ? (
         <View style={[styles.inner, styles.glass]}>
-          <BlurView intensity={24} tint="dark" style={StyleSheet.absoluteFill} />
+          <BlurView intensity={40} tint="dark" style={StyleSheet.absoluteFill} />
+          <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(255,255,255,0.05)' }]} />
+          <LinearGradient
+            colors={['rgba(255,255,255,0.22)', 'rgba(255,255,255,0.04)', 'rgba(255,255,255,0)']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 0.8, y: 1 }}
+            style={StyleSheet.absoluteFill}
+            pointerEvents="none"
+          />
+          <LinearGradient
+            colors={['rgba(255,255,255,0.5)', 'rgba(255,255,255,0)']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.topRim}
+            pointerEvents="none"
+          />
           <Content label={label} icon={icon} loading={loading} color={palette.textPrimary} />
         </View>
       ) : (
@@ -145,6 +160,13 @@ const styles = StyleSheet.create({
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: palette.hairlineStrong,
     backgroundColor: 'rgba(255,255,255,0.04)',
+  },
+  topRim: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 1.5,
   },
   content: {
     flexDirection: 'row',
