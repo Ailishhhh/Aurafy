@@ -22,7 +22,7 @@ app.use(express.json({ limit: '12mb' }));
 app.use(cors());
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const MODEL = process.env.GEMINI_MODEL || 'gemini-2.0-flash';
+const MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
 
 // Kept in sync with src/features/analysis/prompt.ts in the app repo.
