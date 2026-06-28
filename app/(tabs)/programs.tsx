@@ -18,6 +18,28 @@ export default function ProgramsTab() {
         </Txt>
       </Animated.View>
 
+      {/* Personalized coach plan — the hero */}
+      <Animated.View entering={FadeInDown.delay(60).duration(450)} style={{ marginTop: spacing.xl }}>
+        <Pressable onPress={() => router.push('/coach')}>
+          <GlassCard glow radius={radius.xl} padding={spacing.lg}>
+            <View style={styles.coachRow}>
+              <View style={styles.coachIcon}>
+                <Ionicons name="sparkles" size={24} color={palette.goldBright} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Txt variant="bodySemi" color={palette.textPrimary}>
+                  Your Personalized Plan
+                </Txt>
+                <Txt variant="caption" color={palette.textSecondary} style={{ marginTop: 2 }}>
+                  AI physique + nutrition built from your profile
+                </Txt>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color={palette.textTertiary} />
+            </View>
+          </GlassCard>
+        </Pressable>
+      </Animated.View>
+
       <View style={styles.grid}>
         {/* Face analysis */}
         <Animated.View entering={FadeInDown.delay(80).duration(450)} style={styles.cell}>
@@ -60,6 +82,8 @@ export default function ProgramsTab() {
 
 const styles = StyleSheet.create({
   content: { paddingBottom: 130 },
+  coachRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+  coachIcon: { width: 48, height: 48, borderRadius: radius.md, backgroundColor: 'rgba(255,198,92,0.16)', alignItems: 'center', justifyContent: 'center' },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md, marginTop: spacing.xl },
   cell: { width: '47.5%', flexGrow: 1 },
   icon: { width: 44, height: 44, borderRadius: radius.md, alignItems: 'center', justifyContent: 'center' },

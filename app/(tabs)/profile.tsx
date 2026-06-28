@@ -9,6 +9,7 @@ import { useAuth, authStore } from '@/features/auth/authStore';
 import { useAnalysis, analysisStore } from '@/store/analysisStore';
 import { profileStore } from '@/features/profile/profileStore';
 import { inviteStore } from '@/features/invite/inviteStore';
+import { coachStore } from '@/features/coach/coachStore';
 import { reminders } from '@/features/notifications/notifications';
 import { palette, gradients, spacing, radius } from '@/theme';
 
@@ -95,6 +96,7 @@ export default function ProfileTab() {
           await analysisStore.wipe();
           await profileStore.wipe();
           await inviteStore.wipe();
+          await coachStore.wipe();
           await authStore.signOut();
           router.replace('/');
         },

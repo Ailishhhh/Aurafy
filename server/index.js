@@ -104,6 +104,66 @@ const RESPONSE_SCHEMA = {
   required: ['overall', 'potential', 'headline', 'metrics', 'plan'],
 };
 
+const COACH_SYSTEM = `You are Aurafy's elite physique + nutrition coach (think national-level strength coach + sports nutritionist). Build a FULLY PERSONALIZED plan from the user's profile.
+
+RULES:
+- Respect their training place EXACTLY: "gym" -> use barbells/machines/dumbbells; "home" -> bodyweight + minimal gear only (NEVER prescribe machines); "none" -> gentle beginner ramp.
+- Respect their diet EXACTLY: veg/eggetarian/nonveg/vegan — every meal idea must fit it (India-friendly, affordable options welcome).
+- Use their height/weight (if given) to estimate calorie + protein targets for their goal & build. If missing, give a clear rule-of-thumb.
+- Match volume to their available time/day and their build & goals.
+- Match TONE to their requested coach vibe (gentle / honest / brutal — but never cruel).
+- Read their free-text notes and reflect their actual situation.
+- Be specific and realistic. No steroids, no crash diets, no surgery. Add a brief safety note.
+
+OUTPUT: ONLY JSON per schema. A workout split with 3-6 day entries (each: day label, focus, 4-6 concrete exercises). Nutrition: an approach line, 3-5 meal ideas fitting their diet, and practical tips. Habits list. A short motivating, personalized summary + a safety note.`;
+
+const COACH_SCHEMA = {
+  type: 'OBJECT',
+  properties: {
+    summary: { type: 'STRING' },
+    calorieTarget: { type: 'STRING' },
+    proteinTarget: { type: 'STRING' },
+    workout: {
+      type: 'OBJECT',
+      properties: {
+        split: { type: 'STRING' },
+        days: {
+          type: 'ARRAY',
+          items: {
+            type: 'OBJECT',
+            properties: {
+              day: { type: 'STRING' },
+              focus: { type: 'STRING' },
+              exercises: { type: 'ARRAY', items: { type: 'STRING' } },
+            },
+            required: ['day', 'focus', 'exercises'],
+          },
+        },
+      },
+      required: ['split', 'days'],
+    },
+    nutrition: {
+      type: 'OBJECT',
+      properties: {
+        approach: { type: 'STRING' },
+        meals: {
+          type: 'ARRAY',
+          items: {
+            type: 'OBJECT',
+            properties: { name: { type: 'STRING' }, idea: { type: 'STRING' } },
+            required: ['name', 'idea'],
+          },
+        },
+        tips: { type: 'ARRAY', items: { type: 'STRING' } },
+      },
+      required: ['approach', 'meals', 'tips'],
+    },
+    habits: { type: 'ARRAY', items: { type: 'STRING' } },
+    notes: { type: 'STRING' },
+  },
+  required: ['summary', 'calorieTarget', 'proteinTarget', 'workout', 'nutrition', 'habits', 'notes'],
+};
+
 const TRANSFORM_INSTRUCTION = `Edit this photo of a person to show a realistic, ATTAINABLE "after" glow-up — the result of consistent grooming, skincare and getting leaner over several months. Apply: clearer and even-toned skin (remove active acne, marks and pigmentation), well-groomed shaped eyebrows, a flattering modern hairstyle that suits their face, neat/styled facial hair, slightly reduced facial puffiness and under-eye bags, and a slightly leaner face that reveals a bit more jaw and cheekbone definition.
 
 CRITICAL: Keep the SAME person — same identity, ethnicity, skin tone, age, gender, eye shape and bone structure. It must clearly look like the same individual, just healthier and well-groomed. Photorealistic, natural lighting, front-facing portrait. Do NOT make it look like a different person, a celebrity, heavy makeup, or an unrealistic fashion-model fantasy.`;
@@ -163,6 +223,48 @@ app.post('/analyze', async (req, res) => {
     return res.json(parsed);
   } catch (err) {
     console.error('Server /analyze error', err);
+    return res.status(500).json({ error: 'Internal error' });
+  }
+});
+
+app.post('/coach', async (req, res) => {
+  try {
+    if (!GEMINI_API_KEY) return res.status(500).json({ error: 'Server missing GEMINI_API_KEY' });
+    const { prompt } = req.body || {};
+    if (!prompt) return res.status(400).json({ error: 'Expected { prompt }' });
+
+    const r = await fetch(`${BASE}/${TEXT_MODEL}:generateContent?key=${GEMINI_API_KEY}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        system_instruction: { parts: [{ text: COACH_SYSTEM }] },
+        contents: [{ role: 'user', parts: [{ text: prompt }] }],
+        generationConfig: {
+          responseMimeType: 'application/json',
+          responseSchema: COACH_SCHEMA,
+          temperature: 0.7,
+          maxOutputTokens: 8192,
+          thinkingConfig: { thinkingBudget: 2048 },
+        },
+      }),
+    });
+    if (!r.ok) {
+      const detail = await r.text();
+      console.error('Gemini /coach error', r.status, detail);
+      return res.status(502).json({ error: 'Upstream model error', status: r.status, detail: detail.slice(0, 800) });
+    }
+    const data = await r.json();
+    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!text) return res.status(502).json({ error: 'Empty model response' });
+    let parsed;
+    try {
+      parsed = JSON.parse(text);
+    } catch {
+      return res.status(502).json({ error: 'Model returned non-JSON', raw: text.slice(0, 500) });
+    }
+    return res.json(parsed);
+  } catch (err) {
+    console.error('Server /coach error', err);
     return res.status(500).json({ error: 'Internal error' });
   }
 });

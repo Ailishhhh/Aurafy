@@ -13,14 +13,27 @@ const AGE_LABELS: Record<string, string> = {
   '30plus': '30+ (adult — no bone growth; posture/appearance only)',
 };
 
-/** Build a short user-context string from the saved profile for the prompt. */
+const VIBE_TONE: Record<string, string> = {
+  gentle: 'Use a GENTLE, supportive, encouraging tone (still honest, but kind).',
+  honest: 'Use a straight, balanced, honest tone.',
+  brutal: 'Use a BLUNT, no-sugar-coating tone — brutally honest but never cruel about their worth.',
+};
+
+/** Build a rich user-context string from the saved profile for the prompt. */
 function buildContext(): string | undefined {
   const { profile } = profileStore.getSnapshot();
   const parts: string[] = [];
   if (profile.ageRange) parts.push(`age ${AGE_LABELS[profile.ageRange] ?? profile.ageRange}`);
   if (profile.gender) parts.push(`gender ${profile.gender}`);
+  if (profile.heightCm) parts.push(`height ${profile.heightCm}cm`);
+  if (profile.weightKg) parts.push(`weight ${profile.weightKg}kg`);
+  if (profile.bodyType) parts.push(`build ${profile.bodyType}`);
+  if (profile.trainingPlace) parts.push(`trains at ${profile.trainingPlace}`);
+  if (profile.diet) parts.push(`diet ${profile.diet}`);
   if (profile.goals?.length) parts.push(`primary goals: ${profile.goals.join(', ')}`);
-  return parts.length ? parts.join('; ') : undefined;
+  if (profile.about) parts.push(`in their own words: "${profile.about}"`);
+  if (profile.coachVibe) parts.push(VIBE_TONE[profile.coachVibe] ?? '');
+  return parts.filter(Boolean).length ? parts.filter(Boolean).join('; ') : undefined;
 }
 
 /**

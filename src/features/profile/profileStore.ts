@@ -11,6 +11,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export type AgeRange = 'under16' | '16-19' | '20-24' | '25-29' | '30plus';
 export type Gender = 'male' | 'female' | 'other';
+export type BodyType = 'lean' | 'average' | 'heavier' | 'muscular';
+export type TrainingPlace = 'gym' | 'home' | 'none';
+export type Diet = 'veg' | 'nonveg' | 'eggetarian' | 'vegan';
+export type CoachVibe = 'gentle' | 'honest' | 'brutal';
 
 export type Profile = {
   completed: boolean;
@@ -18,6 +22,15 @@ export type Profile = {
   ageRange?: AgeRange;
   gender?: Gender;
   timePerDay?: string;
+  // Deep-onboarding fields (used to personalize the AI + physique plan).
+  heightCm?: number;
+  weightKg?: number;
+  bodyType?: BodyType;
+  trainingPlace?: TrainingPlace;
+  diet?: Diet;
+  coachVibe?: CoachVibe;
+  /** Free-text "describe yourself" — fed straight into the AI. */
+  about?: string;
 };
 
 export type Streak = {

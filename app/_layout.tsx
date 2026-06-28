@@ -19,6 +19,7 @@ import { analysisStore } from '@/store/analysisStore';
 import { authStore } from '@/features/auth/authStore';
 import { profileStore } from '@/features/profile/profileStore';
 import { inviteStore } from '@/features/invite/inviteStore';
+import { coachStore } from '@/features/coach/coachStore';
 import { initCloudSync } from '@/features/sync/cloudSync';
 import { billing } from '@/features/billing/billing';
 
@@ -39,6 +40,7 @@ export default function RootLayout() {
     authStore.hydrate();
     profileStore.hydrate();
     inviteStore.hydrate();
+    coachStore.hydrate();
     analysisStore.hydrate();
     // Mirror data to Supabase once stores start emitting (no-op for guests).
     initCloudSync();
@@ -71,6 +73,7 @@ export default function RootLayout() {
           <Stack.Screen name="quiz" options={{ animation: 'slide_from_right' }} />
           <Stack.Screen name="(tabs)" />
           <Stack.Screen name="program/[id]" options={{ animation: 'slide_from_right' }} />
+          <Stack.Screen name="coach" options={{ animation: 'slide_from_right' }} />
           <Stack.Screen name="scan" options={{ animation: 'slide_from_right' }} />
           <Stack.Screen name="analyzing" options={{ animation: 'fade', gestureEnabled: false }} />
           <Stack.Screen name="results" options={{ animation: 'fade' }} />
