@@ -74,10 +74,13 @@ export function buildUserPrompt(hasSide: boolean, userContext?: string): string 
     userContext
       ? `User context (tailor the plan to this — give age-appropriate height/growth advice, and prioritise the user's stated goals): ${userContext}.`
       : '',
-    'Be honest and calibrated — do not inflate scores. Name the actual visible',
-    'issues and give concrete, named product/ingredient protocols. Include exactly',
-    '6 metrics (jawline, skin, symmetry, eyes, hair, cheekbones) and 5-7 prioritized',
-    `plan steps (highest-impact first). Respond with JSON only, matching: ${RESPONSE_SCHEMA_HINT}`,
+    'Be honest and calibrated — do not inflate scores. Reference concrete details',
+    'you actually see in the photo. Only flag real, visible weaknesses and affirm',
+    'genuine strengths — do NOT give generic advice or invent problems. If their',
+    'current hair already suits them, keep it and focus elsewhere; only suggest new',
+    'cuts if it genuinely helps. Vary the 6 metric scores (jawline, skin, symmetry,',
+    'eyes, hair, cheekbones) based on what you see, and build 4-6 plan steps around',
+    `their actual weakest areas. Respond with JSON only, matching: ${RESPONSE_SCHEMA_HINT}`,
   ]
     .filter(Boolean)
     .join(' ');
