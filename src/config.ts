@@ -7,3 +7,8 @@ export const APP_DOWNLOAD_URL = 'https://play.google.com/store/apps/details?id=c
 
 /** Friends a free user must invite to unlock their full analysis. */
 export const REQUIRED_INVITES = 3;
+
+/** Public legal pages (served from the backend). */
+const SERVER_BASE = 'https://aurafy-myu4.onrender.com';
+export const PRIVACY_URL = `${SERVER_BASE}/privacy`;
+export const TERMS_URL = `${SERVER_BASE}/terms`;

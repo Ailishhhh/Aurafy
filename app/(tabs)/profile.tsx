@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Alert, Pressable, StyleSheet, Switch, View } from 'react-native';
+import { Alert, Pressable, StyleSheet, Switch, View, Linking } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -12,6 +12,7 @@ import { inviteStore } from '@/features/invite/inviteStore';
 import { coachStore } from '@/features/coach/coachStore';
 import { chatStore } from '@/features/coach/chatStore';
 import { reminders } from '@/features/notifications/notifications';
+import { PRIVACY_URL, TERMS_URL } from '@/config';
 import { palette, gradients, spacing, radius } from '@/theme';
 
 const APP_VERSION = '1.0.0';
@@ -174,9 +175,9 @@ export default function ProfileTab() {
           ABOUT
         </Txt>
         <GlassCard radius={radius.xl} padding={spacing.md}>
-          <Row icon="shield-checkmark" label="Privacy Policy" onPress={() => Alert.alert('Privacy', 'Add your privacy policy URL before launch.')} />
+          <Row icon="shield-checkmark" label="Privacy Policy" onPress={() => Linking.openURL(PRIVACY_URL)} />
           <View style={styles.sep} />
-          <Row icon="document-text" label="Terms of Service" onPress={() => Alert.alert('Terms', 'Add your terms URL before launch.')} />
+          <Row icon="document-text" label="Terms of Service" onPress={() => Linking.openURL(TERMS_URL)} />
           <View style={styles.sep} />
           <Row icon="information-circle" label="Version" right={<Txt variant="body" color={palette.textTertiary}>{APP_VERSION}</Txt>} />
         </GlassCard>

@@ -181,6 +181,79 @@ const TRANSFORM_INSTRUCTION = `Edit this photo of a person to show a realistic, 
 
 CRITICAL: Keep the SAME person — same identity, ethnicity, skin tone, age, gender, eye shape and bone structure. It must clearly look like the same individual, just healthier and well-groomed. Photorealistic, natural lighting, front-facing portrait. Do NOT make it look like a different person, a celebrity, heavy makeup, or an unrealistic fashion-model fantasy.`;
 
+const LAST_UPDATED = 'June 2026';
+const CONTACT_EMAIL = 'support@aurafy.app'; // TODO: replace with your real support email
+
+function page(title, bodyHtml) {
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aurafy — ${title}</title>
+<style>
+  :root{color-scheme:dark}
+  body{margin:0;background:#07060B;color:#E9E6F5;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;line-height:1.6}
+  .wrap{max-width:760px;margin:0 auto;padding:48px 22px 80px}
+  h1{font-size:30px;background:linear-gradient(90deg,#9D7BFF,#E15CFF,#FFC65C);-webkit-background-clip:text;background-clip:text;color:transparent;margin:0 0 4px}
+  .upd{color:#8E88A6;font-size:13px;margin-bottom:28px}
+  h2{font-size:19px;margin:30px 0 8px;color:#fff}
+  p,li{color:#C7C2DB;font-size:15px}
+  a{color:#9D7BFF}
+  hr{border:0;border-top:1px solid rgba(255,255,255,.1);margin:34px 0}
+  .foot{color:#6f6a86;font-size:13px;margin-top:40px}
+</style></head><body><div class="wrap">${bodyHtml}
+<hr><p class="foot">Aurafy · Last updated ${LAST_UPDATED} · Contact: ${CONTACT_EMAIL}</p>
+</div></body></html>`;
+}
+
+app.get('/privacy', (_req, res) => {
+  res.type('html').send(page('Privacy Policy', `
+<h1>Privacy Policy</h1><div class="upd">Last updated ${LAST_UPDATED}</div>
+<p>Aurafy ("we", "us") provides an AI self-improvement and looksmaxxing app. This policy explains what we collect and how we use it.</p>
+<h2>Information we collect</h2>
+<ul>
+<li><b>Photos you submit</b> (selfies) — used solely to generate your analysis. They are sent to our AI processing provider to produce results and are not used to identify you or sold.</li>
+<li><b>Account information</b> — your email address (for sign-in), managed via our authentication provider.</li>
+<li><b>Profile &amp; usage data</b> — the goals, age range, and preferences you provide, your scan history, streaks, and in-app activity, so we can personalize your plan.</li>
+</ul>
+<h2>How we use it</h2>
+<p>To generate your analysis and personalized plans, save your progress, operate subscriptions, and improve the app. We do not sell your personal data.</p>
+<h2>Third-party services</h2>
+<ul>
+<li><b>Google Gemini API</b> — processes your photos/text to generate analysis and coaching.</li>
+<li><b>Supabase</b> — stores your account and profile data securely.</li>
+<li><b>RevenueCat &amp; Google Play Billing</b> — process subscriptions (we never see your card details).</li>
+</ul>
+<h2>Data retention &amp; your rights</h2>
+<p>You can delete all your data anytime from <b>Profile → Clear all data</b>, which removes your account and content. You may also contact us to request deletion.</p>
+<h2>Security</h2>
+<p>Data is transmitted over encrypted connections and protected by access controls. No method is 100% secure, but we take reasonable measures to protect your information.</p>
+<h2>Age</h2>
+<p>Aurafy is intended for users aged 13 and older. If you are under the age of majority in your country, please use Aurafy with a parent or guardian's involvement. We do not knowingly collect data from children under 13.</p>
+<h2>Changes</h2>
+<p>We may update this policy; material changes will be reflected here with a new date.</p>
+<h2>Contact</h2>
+<p>Questions? Email <a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a>.</p>
+`));
+});
+
+app.get('/terms', (_req, res) => {
+  res.type('html').send(page('Terms of Service', `
+<h1>Terms of Service</h1><div class="upd">Last updated ${LAST_UPDATED}</div>
+<p>By using Aurafy you agree to these terms.</p>
+<h2>What Aurafy is</h2>
+<p>Aurafy provides AI-generated appearance analysis, self-improvement plans, and coaching for general informational and motivational purposes.</p>
+<h2>Not professional advice</h2>
+<p>Aurafy is <b>not</b> medical, dermatological, nutritional, financial, or psychological advice. Always consult a qualified professional before acting on health, diet, or exercise guidance. Scores and projections are estimates for motivation, not facts about your worth.</p>
+<h2>Subscriptions</h2>
+<p>Premium features are offered via auto-renewing subscriptions billed through your app store. You can manage or cancel anytime in your store account; terms and pricing are shown at purchase.</p>
+<h2>Acceptable use</h2>
+<p>Only upload photos of yourself that you have the right to use. Do not misuse the service or upload others' images without consent.</p>
+<h2>Disclaimers &amp; liability</h2>
+<p>The service is provided "as is" without warranties. To the maximum extent permitted by law, Aurafy is not liable for any indirect or consequential damages arising from use of the app.</p>
+<h2>Contact</h2>
+<p>Email <a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a>.</p>
+`));
+});
+
 app.get('/', (_req, res) => {
   res.json({ ok: true, service: 'aurafy-analysis', textModel: TEXT_MODEL, imageModel: IMAGE_MODEL });
 });
