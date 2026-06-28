@@ -49,6 +49,16 @@ export default function Coach() {
         </LinearGradient>
       </Animated.View>
 
+      {/* Ask the AI coach */}
+      <Animated.View entering={FadeInDown.delay(80).duration(500)} style={{ marginTop: spacing.lg }}>
+        <GradientButton
+          label="Ask your coach anything"
+          variant="glass"
+          icon={<Ionicons name="chatbubbles" size={18} color={palette.textPrimary} />}
+          onPress={() => router.push('/chat/general')}
+        />
+      </Animated.View>
+
       {/* Locked */}
       {!unlocked && (
         <Animated.View entering={FadeInDown.delay(100).duration(500)} style={{ marginTop: spacing.xl }}>

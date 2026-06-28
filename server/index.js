@@ -164,6 +164,19 @@ const COACH_SCHEMA = {
   required: ['summary', 'calorieTarget', 'proteinTarget', 'workout', 'nutrition', 'habits', 'notes'],
 };
 
+const CHAT_SYSTEM = `You are Aurafy's personal AI looksmaxxing & self-improvement coach, chatting 1-on-1 with the user. You blend a dermatologist, strength coach, stylist and grooming expert.
+
+STYLE:
+- Warm, sharp, and practical — like a knowledgeable friend who actually knows their stuff.
+- Keep replies CONCISE: a few short sentences or a tight bullet list. No essays.
+- Be specific and actionable. Reference the user's profile/context when relevant.
+- Match the user's coach vibe if given (gentle / honest / brutal — never cruel).
+
+SCOPE & SAFETY:
+- Stay on topic: looks, skin, hair, physique, grooming, style, confidence, nutrition, habits. Politely steer off-topic questions back.
+- No medical diagnosis. For medical/serious skin or health issues, recommend seeing a professional.
+- Never recommend surgery, steroids, crash diets, or anything unsafe.`;
+
 const TRANSFORM_INSTRUCTION = `Edit this photo of a person to show a realistic, ATTAINABLE "after" glow-up — the result of consistent grooming, skincare and getting leaner over several months. Apply: clearer and even-toned skin (remove active acne, marks and pigmentation), well-groomed shaped eyebrows, a flattering modern hairstyle that suits their face, neat/styled facial hair, slightly reduced facial puffiness and under-eye bags, and a slightly leaner face that reveals a bit more jaw and cheekbone definition.
 
 CRITICAL: Keep the SAME person — same identity, ethnicity, skin tone, age, gender, eye shape and bone structure. It must clearly look like the same individual, just healthier and well-groomed. Photorealistic, natural lighting, front-facing portrait. Do NOT make it look like a different person, a celebrity, heavy makeup, or an unrealistic fashion-model fantasy.`;
@@ -265,6 +278,43 @@ app.post('/coach', async (req, res) => {
     return res.json(parsed);
   } catch (err) {
     console.error('Server /coach error', err);
+    return res.status(500).json({ error: 'Internal error' });
+  }
+});
+
+app.post('/chat', async (req, res) => {
+  try {
+    if (!GEMINI_API_KEY) return res.status(500).json({ error: 'Server missing GEMINI_API_KEY' });
+    const { messages, context } = req.body || {};
+    if (!Array.isArray(messages) || messages.length === 0) {
+      return res.status(400).json({ error: 'Expected { messages: [...] }' });
+    }
+    const sys = context ? `${CHAT_SYSTEM}\n\nContext about this user: ${context}` : CHAT_SYSTEM;
+    const contents = messages.slice(-12).map((m) => ({
+      role: m.role === 'assistant' || m.role === 'model' ? 'model' : 'user',
+      parts: [{ text: String(m.content || '') }],
+    }));
+
+    const r = await fetch(`${BASE}/${TEXT_MODEL}:generateContent?key=${GEMINI_API_KEY}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        system_instruction: { parts: [{ text: sys }] },
+        contents,
+        generationConfig: { temperature: 0.7, maxOutputTokens: 1024, thinkingConfig: { thinkingBudget: 0 } },
+      }),
+    });
+    if (!r.ok) {
+      const detail = await r.text();
+      console.error('Gemini /chat error', r.status, detail);
+      return res.status(502).json({ error: 'Upstream model error', status: r.status, detail: detail.slice(0, 600) });
+    }
+    const data = await r.json();
+    const reply = data?.candidates?.[0]?.content?.parts?.map((p) => p.text).join('').trim();
+    if (!reply) return res.status(502).json({ error: 'Empty model response' });
+    return res.json({ reply });
+  } catch (err) {
+    console.error('Server /chat error', err);
     return res.status(500).json({ error: 'Internal error' });
   }
 });

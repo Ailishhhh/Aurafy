@@ -3,7 +3,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { FadeInDown } from 'react-native-reanimated';
-import { Screen, Txt, GlassCard } from '@/components';
+import { Screen, Txt, GlassCard, GradientButton } from '@/components';
 import { getProgram, type ProgramBlock } from '@/features/programs/catalog';
 import { palette, spacing, radius, hitSlop } from '@/theme';
 
@@ -128,6 +128,15 @@ export default function ProgramScreen() {
             </GlassCard>
           </Animated.View>
         ))}
+      </View>
+
+      {/* Ask the AI coach about this program */}
+      <View style={{ marginTop: spacing.xl }}>
+        <GradientButton
+          label={`Ask your coach about ${program.title.toLowerCase()}`}
+          icon={<Ionicons name="chatbubbles" size={18} color={palette.white} />}
+          onPress={() => router.push(`/chat/${program.id}`)}
+        />
       </View>
 
       {program.disclaimer && (
