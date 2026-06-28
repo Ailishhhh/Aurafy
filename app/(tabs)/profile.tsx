@@ -10,7 +10,7 @@ import { useAnalysis, analysisStore } from '@/store/analysisStore';
 import { profileStore } from '@/features/profile/profileStore';
 import { inviteStore } from '@/features/invite/inviteStore';
 import { reminders } from '@/features/notifications/notifications';
-import { palette, gradients, spacing, radius, hitSlop } from '@/theme';
+import { palette, gradients, spacing, radius } from '@/theme';
 
 const APP_VERSION = '1.0.0';
 
@@ -51,13 +51,12 @@ function Row({
   );
 }
 
-export default function Settings() {
+export default function ProfileTab() {
   const router = useRouter();
   const { session } = useAuth();
   const { isPremium } = useAnalysis();
   const [notifications, setNotifications] = useState(false);
 
-  // Reflect the saved reminder preference.
   useEffect(() => {
     reminders.isEnabled().then(setNotifications);
   }, []);
@@ -82,14 +81,7 @@ export default function Settings() {
   const signOut = () => {
     Alert.alert('Sign out', 'Are you sure you want to sign out?', [
       { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Sign out',
-        style: 'destructive',
-        onPress: async () => {
-          await authStore.signOut();
-          router.replace('/');
-        },
-      },
+      { text: 'Sign out', style: 'destructive', onPress: async () => { await authStore.signOut(); router.replace('/'); } },
     ]);
   };
 
@@ -111,19 +103,12 @@ export default function Settings() {
   };
 
   return (
-    <Screen scroll subduedBackground>
-      <View style={styles.topBar}>
-        <Pressable onPress={() => router.back()} hitSlop={hitSlop} style={styles.iconBtn}>
-          <Ionicons name="chevron-back" size={26} color={palette.textPrimary} />
-        </Pressable>
-        <Txt variant="label" color={palette.textSecondary}>
-          SETTINGS
-        </Txt>
-        <View style={styles.iconBtn} />
-      </View>
+    <Screen scroll subduedBackground contentStyle={styles.content}>
+      <Txt variant="title" style={{ marginBottom: spacing.lg }}>
+        Profile
+      </Txt>
 
-      {/* Profile */}
-      <Animated.View entering={FadeInDown.duration(500)}>
+      <Animated.View entering={FadeInDown.duration(450)}>
         <GlassCard radius={radius.xl} padding={spacing.xl}>
           <View style={styles.profile}>
             <LinearGradient colors={gradients.aura} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.avatar}>
@@ -149,25 +134,17 @@ export default function Settings() {
         </GlassCard>
       </Animated.View>
 
-      {/* Premium */}
-      <Animated.View entering={FadeInDown.delay(80).duration(500)} style={{ marginTop: spacing.lg }}>
+      <Animated.View entering={FadeInDown.delay(80).duration(450)} style={{ marginTop: spacing.lg }}>
         <GlassCard radius={radius.xl} padding={spacing.md}>
           {isPremium ? (
             <Row icon="diamond" tint={palette.gold} label="Aurafy Premium" sub="Active — thank you!" />
           ) : (
-            <Row
-              icon="diamond"
-              tint={palette.gold}
-              label="Go Premium"
-              sub="Unlock your full plan & future-self"
-              onPress={() => router.push('/paywall')}
-            />
+            <Row icon="diamond" tint={palette.gold} label="Go Premium" sub="Unlock your full plan & future-self" onPress={() => router.push('/paywall')} />
           )}
         </GlassCard>
       </Animated.View>
 
-      {/* Preferences */}
-      <Animated.View entering={FadeInDown.delay(140).duration(500)} style={{ marginTop: spacing.lg }}>
+      <Animated.View entering={FadeInDown.delay(140).duration(450)} style={{ marginTop: spacing.lg }}>
         <Txt variant="overline" color={palette.textSecondary} style={styles.sectionLabel}>
           PREFERENCES
         </Txt>
@@ -188,8 +165,7 @@ export default function Settings() {
         </GlassCard>
       </Animated.View>
 
-      {/* About */}
-      <Animated.View entering={FadeInDown.delay(200).duration(500)} style={{ marginTop: spacing.lg }}>
+      <Animated.View entering={FadeInDown.delay(200).duration(450)} style={{ marginTop: spacing.lg }}>
         <Txt variant="overline" color={palette.textSecondary} style={styles.sectionLabel}>
           ABOUT
         </Txt>
@@ -202,8 +178,7 @@ export default function Settings() {
         </GlassCard>
       </Animated.View>
 
-      {/* Account */}
-      <Animated.View entering={FadeInDown.delay(260).duration(500)} style={{ marginTop: spacing.lg }}>
+      <Animated.View entering={FadeInDown.delay(260).duration(450)} style={{ marginTop: spacing.lg }}>
         <GlassCard radius={radius.xl} padding={spacing.md}>
           <Row icon="log-out" label="Sign out" onPress={signOut} />
           <View style={styles.sep} />
@@ -219,23 +194,10 @@ export default function Settings() {
 }
 
 const styles = StyleSheet.create({
-  topBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: spacing.lg,
-  },
-  iconBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
+  content: { paddingBottom: 130 },
   profile: { flexDirection: 'row', alignItems: 'center', gap: spacing.lg },
   avatar: { width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center' },
-  proBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: spacing.md,
-    paddingVertical: 5,
-    borderRadius: radius.pill,
-  },
+  proBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: spacing.md, paddingVertical: 5, borderRadius: radius.pill },
   sectionLabel: { marginBottom: spacing.sm, marginLeft: spacing.sm },
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.md },
   rowIcon: { width: 36, height: 36, borderRadius: radius.sm, alignItems: 'center', justifyContent: 'center' },

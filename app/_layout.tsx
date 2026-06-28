@@ -69,8 +69,7 @@ export default function RootLayout() {
           <Stack.Screen name="auth" options={{ animation: 'fade' }} />
           <Stack.Screen name="onboarding" />
           <Stack.Screen name="quiz" options={{ animation: 'slide_from_right' }} />
-          <Stack.Screen name="home" />
-          <Stack.Screen name="settings" options={{ animation: 'slide_from_right' }} />
+          <Stack.Screen name="(tabs)" />
           <Stack.Screen name="program/[id]" options={{ animation: 'slide_from_right' }} />
           <Stack.Screen name="scan" options={{ animation: 'slide_from_right' }} />
           <Stack.Screen name="analyzing" options={{ animation: 'fade', gestureEnabled: false }} />
